@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>首頁</title>
@@ -6,5 +6,29 @@
 <body>
     <h1>歡迎來到我的網站</h1>
     <a href="/about">關於我們</a>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>首頁</title>
+</head>
+<body>
+    <h1>歡迎來到我的網站</h1>
+
+    <form action="/submit" method="post">
+        <label for="phone">電話號碼:</label>
+        <input type="text" id="phone" name="phone"><br><br>
+
+        <label for="option">選擇一項:</label>
+        <select name="option" id="option">
+            <option value="腸病毒">腸病毒</option>
+            <option value="吸藥輔助器">吸藥輔助器</option>
+            <option value="退燒衛教">退燒衛教</option>
+        </select><br><br>
+
+        <input type="submit" value="確定">
+    </form>
 </body>
 </html>
