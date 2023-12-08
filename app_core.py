@@ -75,7 +75,7 @@ def home():
             option = request.form['option']
             submission = f"{phone}, {option}"
             submissions.append(submission)
-        elif 'send' in request.form:
+        elif 'submit_form2' in request.form:
             # 處理送出動作
             submission_to_send = request.form['send']
             sent_submissions.add(submission_to_send)
