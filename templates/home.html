@@ -34,7 +34,7 @@
 </html> -->
 
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>首頁</title>
@@ -60,6 +60,47 @@
     <ul>
         {% for submission in submissions %}
             <li>{{ submission }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+-------------------------------------- -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>首頁</title>
+</head>
+<body>
+    <h1>歡迎來到我的網站</h1>
+
+    <form action="/" method="post">
+        <label for="phone">電話號碼:</label>
+        <input type="text" id="phone" name="phone"><br><br>
+
+        <label for="option">選擇一項:</label>
+        <select name="option" id="option">
+            <option value="腸病毒">腸病毒</option>
+            <option value="吸藥輔助器">吸藥輔助器</option>
+            <option value="退燒衛教">退燒衛教</option>
+        </select><br><br>
+
+        <input type="submit" name="submit_form" value="確定">
+    </form>
+
+    <h2>提交成功清單</h2>
+    <ul>
+        {% for submission in submissions %}
+            <li>
+                {{ submission }}
+                <form action="/" method="post" style="display: inline;">
+                    <input type="hidden" name="send" value="{{ submission }}">
+                    <input type="submit" value="送出">
+                </form>
+                {% if submission in sent_submissions %}
+                    已寄出
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
 </body>
