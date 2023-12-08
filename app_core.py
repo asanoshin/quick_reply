@@ -79,7 +79,12 @@ def home():
             # 處理送出動作
             submission_to_send = request.form['send']
             sent_submissions.add(submission_to_send)
-            print(submission_to_send)  # 在後台打印
+
+            # 拆分 submission_to_send 以打印 phone 和 option
+            phone, option = submission_to_send.split(', ')
+            print(f"Phone: {phone}")
+            print(f"Option: {option}")
+
         return redirect(url_for('home'))
     return render_template('home.html', submissions=submissions, sent_submissions=sent_submissions)
 
