@@ -95,7 +95,7 @@
                 {{ submission }}
                 <form action="/" method="post" style="display: inline;">
                     <input type="hidden" name="send" value="{{ submission }}">
-                    <input type="submit" value="送出">
+                    <input type="submit" name="submit_form2" value="送出">
                 </form>
                 {% if submission in sent_submissions %}
                     已寄出
