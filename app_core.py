@@ -125,8 +125,32 @@ user_id = 'U879e3796fbb1185b9654c34152d07ed9'
 # 初始化 LINE Bot API
 line_bot_api = LineBotApi(channel_access_token)
 
-@app.route('/', methods=['GET', 'POST'])
-def home():
+# @app.route('/', methods=['GET', 'POST'])
+# def home():
+#     if request.method == 'POST':
+#         if 'submit_form' in request.form:
+#             # 處理表單提交
+#             phone = request.form['phone']
+#             option = request.form['option']
+#             submission = f"{phone}, {option}"
+#             submissions.append(submission)
+#         elif 'submit_form2' in request.form:
+#             # 處理送出動作
+#             submission_to_send = request.form['send']
+#             sent_submissions.add(submission_to_send)
+
+#             # 拆分 submission_to_send 以打印 phone 和 option
+#             phone, option = submission_to_send.split(', ')
+#             print(f"Phone: {phone}")
+#             print(f"Option: {option}")
+
+#             # 發送訊息給特定用戶
+#             sent_education_message(option)
+#         return redirect(url_for('home'))
+#     return render_template('home.html', submissions=submissions, sent_submissions=sent_submissions)
+
+@app.route('/send_message', methods=['GET', 'POST'])
+def send_message():
     if request.method == 'POST':
         if 'submit_form' in request.form:
             # 處理表單提交
@@ -134,31 +158,24 @@ def home():
             option = request.form['option']
             submission = f"{phone}, {option}"
             submissions.append(submission)
-        elif 'submit_form2' in request.form:
+        elif 'send' in request.form:
             # 處理送出動作
             submission_to_send = request.form['send']
             sent_submissions.add(submission_to_send)
+            print(submission_to_send)  # 在後台打印
+        return redirect(url_for('send_message'))
+    return render_template('send_message.html', submissions=submissions, sent_submissions=sent_submissions)
 
-            # 拆分 submission_to_send 以打印 phone 和 option
-            phone, option = submission_to_send.split(', ')
-            print(f"Phone: {phone}")
-            print(f"Option: {option}")
-
-            # 發送訊息給特定用戶
-            sent_education_message(option)
-        return redirect(url_for('home'))
-    return render_template('home.html', submissions=submissions, sent_submissions=sent_submissions)
-
-@app.route('/about')
+@app.route('/')
 def about():
-    return render_template('about.html')
+    return render_template('home.html')
 
-def sent_education_message(education_message):
-    try:
-        line_bot_api.push_message(user_id, TextSendMessage(text=education_message))
-        print("訊息已發送")
-    except Exception as e:
-        print(f"發送失敗: {e}")
+# def sent_education_message(education_message):
+#     try:
+#         line_bot_api.push_message(user_id, TextSendMessage(text=education_message))
+#         print("訊息已發送")
+#     except Exception as e:
+#         print(f"發送失敗: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
