@@ -54,6 +54,16 @@ records = {
     "heights": []
 }
 
+@app.route('/users', methods=['GET'])
+def get_users():
+    userId = request.args.get('userId')
+    
+    if userId:
+        name = 'John Doe'  # 這裡可以根據 userId 查找對應的用戶名稱
+        return jsonify({'name': name}), 200
+    else:
+        return jsonify({'error': 'userId is required'}), 400
+
 @app.route('/weights', methods=['POST'])
 def add_weight():
     data = request.get_json()
