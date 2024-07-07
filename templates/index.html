@@ -27,8 +27,9 @@
             margin-bottom: 1em;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 90%;
+            width: 100%;
             max-width: 400px;
+            box-sizing: border-box; /* 確保 padding 包含在寬度內 */
         }
         .form-row {
             display: flex;
@@ -45,6 +46,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             width: 100%;
+            box-sizing: border-box; /* 確保 padding 包含在寬度內 */
         }
         button {
             font-size: 1em;
@@ -56,15 +58,17 @@
             border-radius: 4px;
             cursor: pointer;
             margin-top: 1em;
+            box-sizing: border-box; /* 確保 padding 包含在寬度內 */
         }
         button:hover {
             background-color: #0056b3;
         }
         table {
-            width: 90%;
+            width: 100%;
             max-width: 400px;
             border-collapse: collapse;
             margin-top: 1em;
+            box-sizing: border-box; /* 確保 padding 包含在寬度內 */
         }
         th, td {
             padding: 0.5em;
@@ -80,6 +84,7 @@
             max-width: 400px;
             margin: 0 auto;
             padding: 0 1em;
+            box-sizing: border-box; /* 確保 padding 包含在寬度內 */
         }
         .container table {
             background-color: #fff;
