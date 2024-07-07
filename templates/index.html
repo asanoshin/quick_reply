@@ -110,7 +110,7 @@
                 <tr>
                     <th>日期</th>
                     <th id="valueHeader">體重</th>
-                    <th id="valueRecord">記錄</th>
+                    <th >操作</th>
                 </tr>
             </thead>
             <tbody id="recordList">
@@ -147,7 +147,7 @@
                             body: JSON.stringify({ date, value, userId })
                         }).then(response => response.json())
                         .then(data => {
-                            alert(`新增${recordType === 'weight' ? '體重' : '身高'}記錄：${date} - ${value}`);
+                            // alert(`新增${recordType === 'weight' ? '體重' : '身高'}記錄：${date} - ${value}`);
                             document.getElementById('date').value = '';
                             document.getElementById('value').value = '';
                             queryRecords(); // 新增後更新列表
@@ -200,7 +200,7 @@
                         const recordType = document.getElementById('recordType').value;
                         document.getElementById('recordListTitle').innerText = `${recordType === 'weight' ? '體重' : '身高'}記錄列表`;
                         document.getElementById('valueHeader').innerText = recordType === 'weight' ? '體重' : '身高';
-                        document.getElementById('valueRecord').innerText = recordType === 'weight' ? '記錄(kg)' : '記錄(cm)';
+                       
                     }
 
                     updateFormAndTable(); // 頁面加載時設置表單和表格標題
