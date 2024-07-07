@@ -96,8 +96,10 @@ def add_height():
 
 @app.route('/weights', methods=['GET'])
 def get_weights():
+    print("try to get weights")
     userId = request.args.get('userId')
     user_weights = [record for record in records['weights'] if record['userId'] == userId]
+    print("user_weights",user_weights)
     return jsonify(user_weights), 200
 
 @app.route('/heights', methods=['GET'])

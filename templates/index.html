@@ -110,7 +110,7 @@
                 <tr>
                     <th>日期</th>
                     <th id="valueHeader">體重</th>
-                    <th>操作</th>
+                    <th id="valueRecord">記錄</th>
                 </tr>
             </thead>
             <tbody id="recordList">
@@ -130,81 +130,90 @@
                     document.getElementById('greeting').innerText = `Hello, ${profile.displayName}`;
                     const userId = profile.userId;
 
-                    document.getElementById('recordType').addEventListener('change', function() {
-                        updateFormAndTable();
-                        queryRecords(); // 切換類型時更新列表
-                    });
-
-                    document.getElementById('addRecordForm').addEventListener('submit', function(event) {
-                        event.preventDefault();
-                        const recordType = document.getElementById('recordType').value;
-                        const date = document.getElementById('date').value;
-                        const value = document.getElementById('value').value;
-
-                        fetch(`/${recordType}s`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ date, value, userId })
-                        }).then(response => response.json())
-                        .then(data => {
-                            alert(`新增${recordType === 'weight' ? '體重' : '身高'}記錄：${date} - ${value}`);
-                            document.getElementById('date').value = '';
-                            document.getElementById('value').value = '';
-                            queryRecords(); // 新增後更新列表
-                        })
-                        .catch(error => {
-                            console.error(`新增${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
-                        });
-                    });
-
-
-                    function queryRecords() {
-                        const recordType = document.getElementById('recordType').value;
-                        fetch(`/${recordType}s?userId=${userId}`)
+                    fetch(`/users/${userId}`)
                         .then(response => response.json())
                         .then(data => {
-                            // 更新記錄列表
-                            const recordList = document.getElementById('recordList');
-                            recordList.innerHTML = '';  // 清空當前列表
+                            let name = data.name;
 
-                            data.forEach(record => {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                                    <td>${record.date}</td>
-                                    <td>${record.value}</td>
-                                    <td><button onclick="deleteRecord('${recordType}', ${record.id})">刪除</button></td>
-                                `;
-                                recordList.appendChild(row);
+                            document.getElementById('recordType').addEventListener('change', function() {
+                                updateFormAndTable(name);
+                                queryRecords(); // 切換類型時更新列表
                             });
+
+                            document.getElementById('addRecordForm').addEventListener('submit', function(event) {
+                                event.preventDefault();
+                                const recordType = document.getElementById('recordType').value;
+                                const date = document.getElementById('date').value;
+                                const value = document.getElementById('value').value;
+
+                                fetch(`/${recordType}s`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ date, value, userId })
+                                }).then(response => response.json())
+                                .then(data => {
+                                    alert(`新增${recordType === 'weight' ? '體重' : '身高'}記錄：${date} - ${value}`);
+                                    document.getElementById('date').value = '';
+                                    document.getElementById('value').value = '';
+                                    queryRecords(); // 新增後更新列表
+                                })
+                                .catch(error => {
+                                    console.error(`新增${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
+                                });
+                            });
+
+                            function queryRecords() {
+                                const recordType = document.getElementById('recordType').value;
+                                fetch(`/${recordType}s?userId=${userId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    // 更新記錄列表
+                                    const recordList = document.getElementById('recordList');
+                                    recordList.innerHTML = '';  // 清空當前列表
+                                    data.forEach(record => {
+                                        console.log(record);
+                                        const row = document.createElement('tr');
+                                        row.innerHTML = `
+                                            <td>${record.date}</td>
+                                            <td>${record.value}</td>
+                                            <td><button onclick="deleteRecord('${recordType}', ${record.id})">刪除</button></td>
+                                        `;
+                                        recordList.appendChild(row);
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error(`獲取${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
+                                });
+                            }
+
+                            window.deleteRecord = function(recordType, recordId) {
+                                fetch(`/${recordType}s/${recordId}`, {
+                                    method: 'DELETE',
+                                }).then(response => {
+                                    if (response.ok) {
+                                        alert(`${recordType === 'weight' ? '體重' : '身高'}記錄已刪除`);
+                                        queryRecords(); // 刪除後更新列表
+                                    } else {
+                                        alert('刪除失敗');
+                                    }
+                                }).catch(error => {
+                                    console.error(`刪除${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
+                                });
+                            }
+
+                            function updateFormAndTable(name) {
+                                const recordType = document.getElementById('recordType').value;
+                                document.getElementById('recordListTitle').innerText = `${name}的${recordType === 'weight' ? '體重' : '身高'}記錄列表`;
+                                document.getElementById('valueHeader').innerText = recordType === 'weight' ? '體重' : '身高';
+                                document.getElementById('valueRecord').innerText = recordType === 'weight' ? '記錄(kg)' : '記錄(cm)';
+                            }
+
+                            updateFormAndTable(name); // 頁面加載時設置表單和表格標題
+                            queryRecords(); // 頁面加載時獲取並顯示記錄
                         })
                         .catch(error => {
-                            console.error(`獲取${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
+                            console.error('獲取用戶信息失敗:', error);
                         });
-                    }
-
-                    window.deleteRecord = function(recordType, recordId) {
-                        fetch(`/${recordType}s/${recordId}`, {
-                            method: 'DELETE',
-                        }).then(response => {
-                            if (response.ok) {
-                                alert(`${recordType === 'weight' ? '體重' : '身高'}記錄已刪除`);
-                                queryRecords(); // 刪除後更新列表
-                            } else {
-                                alert('刪除失敗');
-                            }
-                        }).catch(error => {
-                            console.error(`刪除${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
-                        });
-                    }
-
-                    function updateFormAndTable() {
-                        const recordType = document.getElementById('recordType').value;
-                        document.getElementById('recordListTitle').innerText = `${recordType === 'weight' ? '體重' : '身高'}記錄列表`;
-                        document.getElementById('valueHeader').innerText = recordType === 'weight' ? '體重' : '身高';
-                    }
-
-                    updateFormAndTable(); // 頁面加載時設置表單和表格標題
-                    queryRecords(); // 頁面加載時獲取並顯示記錄
                 }
             } catch (error) {
                 console.error('LIFF 初始化失敗:', error);
