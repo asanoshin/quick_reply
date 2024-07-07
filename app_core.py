@@ -14,6 +14,9 @@ handler = WebhookHandler('1bbe70b270080e112f6f495709b43c30')
 def index():
     return render_template('index.html')
 
+@app.route("/index2")
+def index():
+    return render_template('index2.html')
 
 # Webhook route
 @app.route("/callback", methods=['POST'])

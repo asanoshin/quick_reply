@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>體重記錄</title>
+    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+</head>
+<body>
+    <h1 id="greeting">新增體重記錄</h1>
+    <form id="addWeightForm">
+        <label for="date">日期：</label>
+        <input type="date" id="date" name="date" required>
+        <label for="weight">體重：</label>
+        <input type="number" step="0.1" id="weight" name="weight" required>
+        <button type="submit">新增</button>
+    </form>
+
+    <h1>體重記錄列表</h1>
+    <ul id="weightList"></ul>
+
+    <h1>查詢體重記錄</h1>
+    <form id="queryWeightForm">
+        <label for="startDate">開始日期：</label>
+        <input type="date" id="startDate" name="startDate" required>
+        <label for="endDate">結束日期：</label>
+        <input type="date" id="endDate" name="endDate" required>
+        <button type="submit">查詢</button>
+    </form>
+
+    <script>
+        async function main() {
+            await liff.init({ liffId: "2005780715-O50Azkx1" });
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            } else {
+                const profile = await liff.getProfile();
+                document.getElementById('greeting').innerText = `Hello, ${profile.displayName}`;
+                const userId = profile.userId;
+
+                document.getElementById('addWeightForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const date = document.getElementById('date').value;
+                    const weight = document.getElementById('weight').value;
+
+                    fetch('/weights', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ date, weight, userId })
+                    }).then(response => response.json())
+                      .then(data => alert('新增體重記錄：' + date + ' - ' + weight));
+                });
+
+                document.getElementById('queryWeightForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const startDate = document.getElementById('startDate').value;
+                    const endDate = document.getElementById('endDate').value;
+
+                    fetch(`/weights?start=${startDate}&end=${endDate}&userId=${userId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // 更新體重記錄列表
+                        });
+                });
+            }
+        }
+
+        main();
+    </script>
+</body>
+</html>
