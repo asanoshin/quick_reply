@@ -28,49 +28,60 @@
 
     <script>
         async function main() {
-            await liff.init({ liffId: "2005780715-O50Azkx1" });
-            if (!liff.isLoggedIn()) {
-                liff.login();
-            } else {
-                const profile = await liff.getProfile();
-                document.getElementById('greeting').innerText = `Hello, ${profile.displayName}`;
-                const userId = profile.userId;
+            try {
+                await liff.init({ liffId: "2005780715-O50Azkx1" });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    document.getElementById('greeting').innerText = `Hello, ${profile.displayName}`;
+                    const userId = profile.userId;
 
-                document.getElementById('addWeightForm').addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    const date = document.getElementById('date').value;
-                    const weight = document.getElementById('weight').value;
+                    document.getElementById('addWeightForm').addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        const date = document.getElementById('date').value;
+                        const weight = document.getElementById('weight').value;
 
-                fetch('/weights', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ date, weight, userId })
-                }).then(response => response.json())
-                    .then(data => alert('新增體重記錄：' + date + ' - ' + weight));
-            });
-
-            document.getElementById('queryWeightForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-
-                fetch(`/weights?start=${startDate}&end=${endDate}&userId=${userId}`)
-                .then(response => response.json())
-                .then(data => {
-                    // 更新體重記錄列表
-                    const weightList = document.getElementById('weightList');
-                    weightList.innerHTML = '';  // 清空當前列表
-
-                    data.forEach(record => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `日期: ${record.date}, 體重: ${record.weight}`;
-                        weightList.appendChild(listItem);
+                        fetch('/weights', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ date, weight, userId })
+                        }).then(response => response.json())
+                          .then(data => {
+                              alert('新增體重記錄：' + date + ' - ' + weight);
+                              document.getElementById('date').value = '';
+                              document.getElementById('weight').value = '';
+                          })
+                          .catch(error => {
+                              console.error('新增體重記錄失敗:', error);
+                          });
                     });
-                })
-                .catch(error => {
-                    console.error('獲取體重記錄失敗:', error);
+
+                    document.getElementById('queryWeightForm').addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        const startDate = document.getElementById('startDate').value;
+                        const endDate = document.getElementById('endDate').value;
+
+                        fetch(`/weights?start=${startDate}&end=${endDate}&userId=${userId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // 更新體重記錄列表
+                            const weightList = document.getElementById('weightList');
+                            weightList.innerHTML = '';  // 清空當前列表
+
+                            data.forEach(record => {
+                                const listItem = document.createElement('li');
+                                listItem.textContent = `日期: ${record.date}, 體重: ${record.weight}`;
+                                weightList.appendChild(listItem);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('獲取體重記錄失敗:', error);
+                        });
                     });
-                });
+                }
+            } catch (error) {
+                console.error('LIFF 初始化失敗:', error);
             }
         }
 
