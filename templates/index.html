@@ -122,7 +122,7 @@
     <script>
         async function main() {
             try {
-                await liff.init({ liffId: "2005780715-O50Azkx1" });
+                await liff.init({ liffId: "YOUR_LIFF_ID" });
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 } else {
@@ -130,7 +130,7 @@
                     document.getElementById('greeting').innerText = `Hello, ${profile.displayName}`;
                     const userId = profile.userId;
 
-                    fetch(`/users/${userId}`)
+                    fetch(`/users?userId=${userId}`)
                         .then(response => response.json())
                         .then(data => {
                             let name = data.name;
@@ -167,11 +167,9 @@
                                 fetch(`/${recordType}s?userId=${userId}`)
                                 .then(response => response.json())
                                 .then(data => {
-                                    // 更新記錄列表
                                     const recordList = document.getElementById('recordList');
-                                    recordList.innerHTML = '';  // 清空當前列表
+                                    recordList.innerHTML = '';
                                     data.forEach(record => {
-                                        console.log(record);
                                         const row = document.createElement('tr');
                                         row.innerHTML = `
                                             <td>${record.date}</td>
@@ -208,8 +206,8 @@
                                 document.getElementById('valueRecord').innerText = recordType === 'weight' ? '記錄(kg)' : '記錄(cm)';
                             }
 
-                            updateFormAndTable(name); // 頁面加載時設置表單和表格標題
-                            queryRecords(); // 頁面加載時獲取並顯示記錄
+                            updateFormAndTable(name);
+                            queryRecords();
                         })
                         .catch(error => {
                             console.error('獲取用戶信息失敗:', error);
