@@ -72,6 +72,12 @@
                             data.forEach(record => {
                                 const listItem = document.createElement('li');
                                 listItem.textContent = `日期: ${record.date}, 體重: ${record.weight}`;
+
+                                const deleteButton = document.createElement('button');
+                                deleteButton.textContent = '刪除';
+                                deleteButton.addEventListener('click', () => deleteWeightRecord(record.id));
+
+                                listItem.appendChild(deleteButton);
                                 weightList.appendChild(listItem);
                             });
                         })
@@ -83,6 +89,21 @@
             } catch (error) {
                 console.error('LIFF 初始化失敗:', error);
             }
+        }
+
+        function deleteWeightRecord(recordId) {
+            fetch(`/weights/${recordId}`, {
+                method: 'DELETE',
+            }).then(response => {
+                if (response.ok) {
+                    alert('體重記錄已刪除');
+                    document.querySelector(`li[data-id='${recordId}']`).remove();
+                } else {
+                    alert('刪除失敗');
+                }
+            }).catch(error => {
+                console.error('刪除體重記錄失敗:', error);
+            });
         }
 
         main();
