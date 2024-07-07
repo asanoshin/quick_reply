@@ -42,6 +42,8 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     if event.message.text == "體重查詢":
+        user_id = event.source.user_id
+        print("user_ide",user_id)
         reply_message = TextSendMessage(text='請點擊以下連結查詢體重：https://your-liff-app-url')
         line_bot_api.reply_message(event.reply_token, reply_message)
 
