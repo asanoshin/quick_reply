@@ -66,6 +66,7 @@ def add_weight():
             'userId': data['userId']
         }
         records['weights'].append(new_record)
+        print("new_record",new_record)
         return jsonify(new_record), 201
     return jsonify({'error': 'Invalid data'}), 400
 
@@ -87,6 +88,8 @@ def add_height():
 def get_weights():
     userId = request.args.get('userId')
     user_weights = [record for record in records['weights'] if record['userId'] == userId]
+    print("user_id",userId)
+    print("user_weights",user_weights)
     return jsonify(user_weights), 200
 
 @app.route('/heights', methods=['GET'])
