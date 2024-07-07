@@ -57,7 +57,7 @@ records = {
 @app.route('/users', methods=['GET'])
 def get_users():
     userId = request.args.get('userId')
-    
+    print("userId",userId)
     if userId:
         name = 'John Doe'  # 這裡可以根據 userId 查找對應的用戶名稱
         return jsonify({'name': name}), 200
@@ -67,6 +67,7 @@ def get_users():
 @app.route('/weights', methods=['POST'])
 def add_weight():
     data = request.get_json()
+    print("data",data)
     if 'date' in data and 'value' in data and 'userId' in data:
         new_record = {
             'id': len(records['weights']) + 1,
@@ -75,6 +76,7 @@ def add_weight():
             'userId': data['userId']
         }
         records['weights'].append(new_record)
+        print("new_record",new_record)
         return jsonify(new_record), 201
     return jsonify({'error': 'Invalid data'}), 400
 
