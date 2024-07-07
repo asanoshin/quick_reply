@@ -146,16 +146,17 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ date, value, userId })
                         }).then(response => response.json())
-                          .then(data => {
-                              alert(`新增${recordType === 'weight' ? '體重' : '身高'}記錄：${date} - ${value}`);
-                              document.getElementById('date').value = '';
-                              document.getElementById('value').value = '';
-                              queryRecords(); // 新增後更新列表
-                          })
-                          .catch(error => {
-                              console.error(`新增${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
-                          });
+                        .then(data => {
+                            alert(`新增${recordType === 'weight' ? '體重' : '身高'}記錄：${date} - ${value}`);
+                            document.getElementById('date').value = '';
+                            document.getElementById('value').value = '';
+                            queryRecords(); // 新增後更新列表
+                        })
+                        .catch(error => {
+                            console.error(`新增${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
+                        });
                     });
+
 
                     function queryRecords() {
                         const recordType = document.getElementById('recordType').value;
