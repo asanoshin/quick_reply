@@ -94,6 +94,7 @@
     </style>
 </head>
 <body>
+    <h1>test</h1>
     <div class="container">
         <h1 id="greeting">新增記錄</h1>
         <form id="addRecordForm">
@@ -109,7 +110,7 @@
                 <input type="date" id="date" name="date" required>
             </div>
             <div class="form-row">
-                <label for="value">值：</label>
+                <label for="value">數值：</label>
                 <input type="number" step="0.1" id="value" name="value" required>
             </div>
             <button type="submit">新增</button>
@@ -196,7 +197,7 @@
                             method: 'DELETE',
                         }).then(response => {
                             if (response.ok) {
-                                alert(`${recordType === 'weight' ? '體重' : '身高'}記錄已刪除`);
+                                // alert(`${recordType === 'weight' ? '體重' : '身高'}記錄已刪除`);
                                 queryRecords(); // 刪除後更新列表
                             } else {
                                 alert('刪除失敗');
