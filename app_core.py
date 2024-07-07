@@ -80,6 +80,8 @@ def get_weights():
     end_date = request.args.get('end')
     user_id = request.args.get('userId')
     filtered_records = [record for record in weight_records if start_date <= record['date'] <= end_date and record['user_id'] == user_id]
+    
+    print(filtered_records)
     return jsonify(filtered_records)
 
 if __name__ == '__main__':
