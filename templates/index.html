@@ -157,7 +157,6 @@
                         });
                     });
 
-
                     function queryRecords() {
                         const recordType = document.getElementById('recordType').value;
                         fetch(`/${recordType}s?userId=${userId}`)
@@ -171,7 +170,7 @@
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
                                     <td>${record.date}</td>
-                                    <td>${record.value}</td>
+                                    <td>${recordType === 'weight' ? record.weight : record.height}</td>
                                     <td><button onclick="deleteRecord('${recordType}', ${record.id})">刪除</button></td>
                                 `;
                                 recordList.appendChild(row);
