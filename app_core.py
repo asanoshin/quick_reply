@@ -48,41 +48,68 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, reply_message)
 
 
-# 模擬的資料庫
-weight_records = []
 
-# 新增體重記錄
+# 模擬數據庫
+records = {
+    "weights": [],
+    "heights": []
+}
+
 @app.route('/weights', methods=['POST'])
 def add_weight():
     data = request.get_json()
-    record = {
-        'id': len(weight_records) + 1,
-        'date': data['date'],
-        'weight': data['weight'],
-        'user_id': data['userId']
-    }
-    print(record)
-    weight_records.append(record)
-    return jsonify(record), 201
+    if 'date' in data and 'value' in data and 'userId' in data:
+        new_record = {
+            'id': len(records['weights']) + 1,
+            'date': data['date'],
+            'weight': data['value'],
+            'userId': data['userId']
+        }
+        records['weights'].append(new_record)
+        return jsonify(new_record), 201
+    return jsonify({'error': 'Invalid data'}), 400
 
-# 刪除體重記錄
-@app.route('/weights/<int:record_id>', methods=['DELETE'])
-def delete_weight(record_id):
-    global weight_records
-    weight_records = [record for record in weight_records if record['id'] != record_id]
-    return '', 204
+@app.route('/heights', methods=['POST'])
+def add_height():
+    data = request.get_json()
+    if 'date' in data and 'value' in data and 'userId' in data:
+        new_record = {
+            'id': len(records['heights']) + 1,
+            'date': data['date'],
+            'height': data['value'],
+            'userId': data['userId']
+        }
+        records['heights'].append(new_record)
+        return jsonify(new_record), 201
+    return jsonify({'error': 'Invalid data'}), 400
 
-# 查詢體重記錄
 @app.route('/weights', methods=['GET'])
 def get_weights():
-    print(weight_records)
-    start_date = request.args.get('start')
-    end_date = request.args.get('end')
-    user_id = request.args.get('userId')
-    filtered_records = [record for record in weight_records if start_date <= record['date'] <= end_date and record['user_id'] == user_id]
-    
-    print("filtered_record:",filtered_records)
-    return jsonify(filtered_records)
+    userId = request.args.get('userId')
+    user_weights = [record for record in records['weights'] if record['userId'] == userId]
+    return jsonify(user_weights), 200
+
+@app.route('/heights', methods=['GET'])
+def get_heights():
+    userId = request.args.get('userId')
+    user_heights = [record for record in records['heights'] if record['userId'] == userId]
+    return jsonify(user_heights), 200
+
+@app.route('/weights/<int:record_id>', methods=['DELETE'])
+def delete_weight(record_id):
+    record = next((record for record in records['weights'] if record['id'] == record_id), None)
+    if record:
+        records['weights'].remove(record)
+        return '', 204
+    return jsonify({'error': 'Record not found'}), 404
+
+@app.route('/heights/<int:record_id>', methods=['DELETE'])
+def delete_height(record_id):
+    record = next((record for record in records['heights'] if record['id'] == record_id), None)
+    if record:
+        records['heights'].remove(record)
+        return '', 204
+    return jsonify({'error': 'Record not found'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
