@@ -56,6 +56,7 @@ def add_weight():
         'weight': data['weight'],
         'user_id': data['userId']
     }
+    print(record)
     weight_records.append(record)
     return jsonify(record), 201
 
@@ -69,6 +70,7 @@ def delete_weight(record_id):
 # 查詢體重記錄
 @app.route('/weights', methods=['GET'])
 def get_weights():
+    print(weight_records)
     start_date = request.args.get('start')
     end_date = request.args.get('end')
     user_id = request.args.get('userId')
