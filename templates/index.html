@@ -265,9 +265,7 @@
                         .then(data => {
                             document.getElementById('date').value = '';
                             document.getElementById('value').value = '';
-                            queryRecords(); // 新增後更新列表
-                        })
-                        .catch(error => {
+zz
                             console.error(`新增${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
                         });
                     });
@@ -289,9 +287,8 @@
                                     <td><button onclick="deleteRecord('${recordType}', ${record.id})">刪除</button></td>
                                 `;
                                 recordList.appendChild(row);
-                            });
-                        })
-                        .catch(error => {
+                            }); 
+                        }).catch(error => {
                             console.error(`獲取${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
                         });
                     }
