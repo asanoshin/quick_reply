@@ -93,6 +93,21 @@ def calculate_mingo_age(birthday):
         print("An error occurred:", e)
         return None, None
 
+@app.route('/name', methods=['GET'])
+def get_name():
+    user_id = request.args.get('userId')
+    if user_id is None:
+        return jsonify({'error': 'Missing userId'}), 400
+
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cursor = conn.cursor()
+
+    number, id_number, birthday, name = select_id1(user_id, cursor)
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({'name': name}), 200
 
 @app.route('/weights', methods=['POST'])
 def add_weight():

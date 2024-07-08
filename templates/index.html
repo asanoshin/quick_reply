@@ -225,7 +225,7 @@
             <thead>
                 <tr>
                     <th>日期</th>
-                    <th id="valueHeader">體重</th>
+                    <th id="valueHeader">體重(kg)</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -318,8 +318,21 @@ zz
 
                     function updateFormAndTable() {
                         const recordType = document.getElementById('recordType').value;
-                        document.getElementById('recordListTitle').innerText = `${recordType === 'weight' ? '體重' : '身高'}記錄列表`;
-                        document.getElementById('valueHeader').innerText = recordType === 'weight' ? '體重' : '身高';
+
+                        // 发起 AJAX 请求获取 name
+                        fetch(`/name?userId=${userId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.error) {
+                                    console.error('Error:', data.error);
+                                    return;
+                                }
+
+                                const name = data.name;
+                                document.getElementById('recordListTitle').innerText = `${name}的${recordType === 'weight' ? '體重' : '身高'}記錄列表`;
+                                document.getElementById('valueHeader').innerText = recordType === 'weight' ? '體重(kg)' : '身高(cm)';
+                            })
+                            .catch(error => console.error('Error:', error));
                     }
 
                     updateFormAndTable(); // 頁面加載時設置表單和表格標題
