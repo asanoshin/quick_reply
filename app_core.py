@@ -96,32 +96,40 @@ def calculate_mingo_age(birthday):
 
 @app.route('/weights', methods=['POST'])
 def add_weight():
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cursor = conn.cursor()
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cursor = conn.cursor()
 
-    data = request.get_json()
-    if 'date' in data and 'value' in data and 'userId' in data:
+        data = request.get_json()
+        if 'date' in data and 'value' in data and 'userId' in data:
 
-        user_id = data['userId']
-        number, id_number, birthday = select_id1(user_id, cursor)
-        record_date = data['date']
-        try:
-            record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
-        except ValueError:
-            return jsonify({'error': 'Invalid date format'}), 400
-        
-        weight = data['value']
-        source = 'line' 
-        age_year, age_month = calculate_mingo_age(birthday)
-        age_in_years = age_year + age_month / 12
-        cursor.execute('''
-            INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (source, id_number, age_in_years, record_date.date(), None, weight))  # height 為 None，因為您未提供身高值
+            user_id = data['userId']
+            number, id_number, birthday = select_id1(user_id, cursor)
+            record_date = data['date']
+            try:
+                record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
+            except ValueError:
+                return jsonify({'error': 'Invalid date format'}), 400
+            
+            weight = data['value']
+            source = 'line' 
+            age_year, age_month = calculate_mingo_age(birthday)
+            age_in_years = age_year + age_month / 12
+            cursor.execute('''
+                INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            ''', (source, id_number, age_in_years, record_date.date(), None, weight))  # height 為 None，因為您未提供身高值
 
-        print(source, id_number, age_in_years, record_date.date(), None, weight)
-        return jsonify({'status': 'success'}), 201
-    return jsonify({'error': '資料不完整'}), 400
+            print(source, id_number, age_in_years, record_date.date(), None, weight)
+            return jsonify({'status': 'success'}), 201
+        return jsonify({'error': '資料不完整'}), 400
+    except Exception as e:
+        print("An error occurred:", e)
+        return jsonify({'error': 'An error occurred'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # @app.route('/heights', methods=['POST'])
 # def add_height():
@@ -142,11 +150,11 @@ def get_weights():
     user_id = request.args.get('userId')
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
-
-    number, id_number, birthday, name = select_id1(user_id, cursor)
-
+    
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
+
+    number, id_number, birthday, name = select_id1(user_id, cursor)
 
     cursor.execute('''
         SELECT serial_id, record_date, weight
@@ -190,35 +198,43 @@ def delete_weight(record_id):
 
 @app.route('/heights', methods=['POST'])
 def add_height():
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cursor = conn.cursor()
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cursor = conn.cursor()
 
-    data = request.get_json()
-    if 'date' in data and 'value' in data and 'userId' in data:
-        user_id = data['userId']
-        number, id_number, birthday, name = select_id1(user_id, cursor)
-        record_date = data['date']
-        try:
-            record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
-        except ValueError:
-            return jsonify({'error': 'Invalid date format'}), 400
-        
-        height = data['value']
-        source = 'line'
-        age_year, age_month = calculate_mingo_age(birthday)
-        age_in_years = age_year + age_month / 12
-        cursor.execute('''
-            INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (source, id_number, age_in_years, record_date.date(), height, None))  # weight 为 None，因为未提供体重值
+        data = request.get_json()
+        if 'date' in data and 'value' in data and 'userId' in data:
+            user_id = data['userId']
+            number, id_number, birthday, name = select_id1(user_id, cursor)
+            record_date = data['date']
+            try:
+                record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
+            except ValueError:
+                return jsonify({'error': 'Invalid date format'}), 400
+            
+            height = data['value']
+            source = 'line'
+            age_year, age_month = calculate_mingo_age(birthday)
+            age_in_years = age_year + age_month / 12
+            cursor.execute('''
+                INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            ''', (source, id_number, age_in_years, record_date.date(), height, None))  # weight 为 None，因为未提供体重值
 
-        conn.commit()
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            print(source, id_number, age_in_years, record_date.date(), height, None)
+            return jsonify({'status': 'success'}), 201
+        return jsonify({'error': '数据不完整'}), 400
+    except Exception as e:
+        print("An error occurred:", e)
+        return jsonify({'error': 'An error occurred'}), 500
+    
+    finally:
         cursor.close()
         conn.close()
-
-        print(source, id_number, age_in_years, record_date.date(), height, None)
-        return jsonify({'status': 'success'}), 201
-    return jsonify({'error': '数据不完整'}), 400
 
 @app.route('/heights', methods=['GET'])
 def get_heights():
