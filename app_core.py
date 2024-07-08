@@ -2,12 +2,16 @@ from flask import Flask, request, abort, jsonify, render_template
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
+import psycopg2
+from datetime import date
 
 app = Flask(__name__)
 
 # LINE channel access token and secret
 line_bot_api = LineBotApi('bvoaealgSeBUNivXvkNi27W7SFUTwAWmXIshvTZbbiw3aBdqtCN77irNRrXHsrWAlCRlDSYy0vBVLYjJ5pCA/GOuiE+4T8kSCtuaUM5x6eCa2drL2ltM4E707KNQax+HmtCH5bhI/K5LHp8g1xkJQwdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('1bbe70b270080e112f6f495709b43c30')
+
+DATABASE_URL = 'postgresql://qlinywlvdeayao:74910498f72a2177615b9f280a08235f6543151c8b484a577f87783109c38275@ec2-44-218-23-136.compute-1.amazonaws.com:5432/dd8pvnm4i6jcfe'
 
 
 @app.route("/")
@@ -55,64 +59,265 @@ records = {
     "heights": []
 }
 
+
+def calculate_mingo_age(birthday):
+    try:
+
+        # 民国年份转换为公历年份
+        birthday_year = int(birthday[:3]) + 1911
+        birthday_month = int(birthday[3:5])
+        birthday_day = int(birthday[5:7])
+        print(birthday_year, birthday_month, birthday_day)
+        # 计算出生日期
+        birth_date = date(birthday_year, birthday_month, birthday_day)
+        
+        # 计算年龄
+        today = date.today()
+        age_year = today.year - birth_date.year
+        age_month = today.month - birth_date.month
+    
+        # 如果月份差为负，说明还未到生日，年龄减1，月份加12
+        if age_month < 0:
+            age_year -= 1
+            age_month += 12
+        
+        # 如果今天日期在生日之前，月份减1
+        if today.day < birthday_day:
+            age_month -= 1
+            if age_month < 0:
+                age_year -= 1
+                age_month += 12
+        
+        return age_year, age_month
+    except Exception as e:
+        print("An error occurred:", e)
+        return None, None
+
+
 @app.route('/weights', methods=['POST'])
 def add_weight():
-    data = request.get_json()
-    if 'date' in data and 'value' in data and 'userId' in data:
-        new_record = {
-            'id': len(records['weights']) + 1,
-            'date': data['date'],
-            'weight': data['value'],
-            'userId': data['userId']
-        }
-        records['weights'].append(new_record)
-        print("new_record",new_record)
-        return jsonify(new_record), 201
-    return jsonify({'error': 'Invalid data'}), 400
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cursor = conn.cursor()
 
-@app.route('/heights', methods=['POST'])
-def add_height():
     data = request.get_json()
     if 'date' in data and 'value' in data and 'userId' in data:
-        new_record = {
-            'id': len(records['heights']) + 1,
-            'date': data['date'],
-            'height': data['value'],
-            'userId': data['userId']
-        }
-        records['heights'].append(new_record)
-        return jsonify(new_record), 201
-    return jsonify({'error': 'Invalid data'}), 400
+        number,  id_number, birthday = select_id1(user_id, cursor)
+        user_id = data['userId']
+        record_date = data['date']
+        weight = data['value']
+        source = 'line' 
+        age_year, age_month = calculate_mingo_age(birthday)
+        age_in_years = age_year + age_month / 12
+        cursor.execute('''
+            INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        ''', (source, id_number, age_in_years, record_date.date(), None, weight))  # height 為 None，因為您未提供身高值
+
+        print(source, id_number, age_in_years, record_date.date(), None, weight)
+        return jsonify({'status': 'success'}), 201
+    return jsonify({'error': '資料不完整'}), 400
+
+# @app.route('/heights', methods=['POST'])
+# def add_height():
+#     data = request.get_json()
+#     if 'date' in data and 'value' in data and 'userId' in data:
+#         new_record = {
+#             'id': len(records['heights']) + 1,
+#             'date': data['date'],
+#             'height': data['value'],
+#             'userId': data['userId']
+#         }
+#         records['heights'].append(new_record)
+#         return jsonify(new_record), 201
+#     return jsonify({'error': 'Invalid data'}), 400
 
 @app.route('/weights', methods=['GET'])
 def get_weights():
-    userId = request.args.get('userId')
-    user_weights = [record for record in records['weights'] if record['userId'] == userId]
-    print("user_id",userId)
-    print("user_weights",user_weights)
-    return jsonify(user_weights), 200
+    user_id = request.args.get('userId')
+    if user_id is None:
+        return jsonify({'error': 'Missing userId'}), 400
 
-@app.route('/heights', methods=['GET'])
-def get_heights():
-    userId = request.args.get('userId')
-    user_heights = [record for record in records['heights'] if record['userId'] == userId]
-    return jsonify(user_heights), 200
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT serial_id, record_date, weight
+        FROM child_bw_height_table
+        WHERE id_number = %s AND weight IS NOT NULL
+        ORDER BY record_date
+    ''', (user_id,))
+
+    user_weights = cursor.fetchall()
+
+    records = [{'id': record[0], 'date': record[1], 'weight': record[2]} for record in user_weights]
+
+    cursor.close()
+    conn.close()
+
+    print("user_id", user_id)
+    print("user_weights", records)
+
+    return jsonify(records), 200
 
 @app.route('/weights/<int:record_id>', methods=['DELETE'])
 def delete_weight(record_id):
-    record = next((record for record in records['weights'] if record['id'] == record_id), None)
-    if record:
-        records['weights'].remove(record)
-        return '', 204
-    return jsonify({'error': 'Record not found'}), 404
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        DELETE FROM child_bw_height_table
+        WHERE serial_id = %s
+    ''', (record_id,))
+
+    conn.commit()
+    rowcount = cursor.rowcount
+    cursor.close()
+    conn.close()
+
+    if rowcount == 0:
+        return jsonify({'error': 'Record not found'}), 404
+
+    return '', 204
+
+
+@app.route('/heights', methods=['POST'])
+def add_height():
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cursor = conn.cursor()
+
+    data = request.get_json()
+    if 'date' in data and 'value' in data and 'userId' in data:
+        user_id = data['userId']
+        number, id_number, birthday = select_id1(user_id, cursor)
+        record_date = data['date']
+        height = data['value']
+        source = 'line'
+        age_year, age_month = calculate_mingo_age(birthday)
+        age_in_years = age_year + age_month / 12
+        cursor.execute('''
+            INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        ''', (source, id_number, age_in_years, record_date.date(), height, None))  # weight 为 None，因为未提供体重值
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        print(source, id_number, age_in_years, record_date.date(), height, None)
+        return jsonify({'status': 'success'}), 201
+    return jsonify({'error': '数据不完整'}), 400
+
+@app.route('/heights', methods=['GET'])
+def get_heights():
+    user_id = request.args.get('userId')
+    if user_id is None:
+        return jsonify({'error': 'Missing userId'}), 400
+
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT serial_id, record_date, height
+        FROM child_bw_height_table
+        WHERE id_number = %s AND height IS NOT NULL
+        ORDER BY record_date
+    ''', (user_id,))
+
+    user_heights = cursor.fetchall()
+
+    records = [{'id': record[0], 'date': record[1], 'height': record[2]} for record in user_heights]
+
+    cursor.close()
+    conn.close()
+
+    print("user_id", user_id)
+    print("user_heights", records)
+
+    return jsonify(records), 200
 
 @app.route('/heights/<int:record_id>', methods=['DELETE'])
 def delete_height(record_id):
-    record = next((record for record in records['heights'] if record['id'] == record_id), None)
-    if record:
-        records['heights'].remove(record)
-        return '', 204
-    return jsonify({'error': 'Record not found'}), 404
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        DELETE FROM child_bw_height_table
+        WHERE serial_id = %s
+    ''', (record_id,))
+
+    conn.commit()
+    rowcount = cursor.rowcount
+    cursor.close()
+    conn.close()
+
+    print("success delet height")
+
+    if rowcount == 0:
+        return jsonify({'error': 'Record not found'}), 404
+
+    return '', 204
+
+# @app.route('/weights', methods=['GET'])
+# def get_weights():
+#     userId = request.args.get('userId')
+#     user_weights = [record for record in records['weights'] if record['userId'] == userId]
+#     print("user_id",userId)
+#     print("user_weights",user_weights)
+#     return jsonify(user_weights), 200
+
+# @app.route('/heights', methods=['GET'])
+# def get_heights():
+#     userId = request.args.get('userId')
+#     user_heights = [record for record in records['heights'] if record['userId'] == userId]
+#     return jsonify(user_heights), 200
+
+# @app.route('/weights/<int:record_id>', methods=['DELETE'])
+# def delete_weight(record_id):
+#     record = next((record for record in records['weights'] if record['id'] == record_id), None)
+#     if record:
+#         records['weights'].remove(record)
+#         return '', 204
+#     return jsonify({'error': 'Record not found'}), 404
+
+# @app.route('/heights/<int:record_id>', methods=['DELETE'])
+# def delete_height(record_id):
+#     record = next((record for record in records['heights'] if record['id'] == record_id), None)
+#     if record:
+#         records['heights'].remove(record)
+#         return '', 204
+#     return jsonify({'error': 'Record not found'}), 404
+
+def select_id1(user_id, cursor):
+    """檢查資料庫中是否存在給定的用戶 ID"""
+    try:
+
+        # 查詢資料庫中是否有給定的用戶 ID , 且 delete_date 是 NULL
+        select_query = f"SELECT number, baby_data FROM id_table11 WHERE id = %s AND delete_date IS NULL"
+        cursor.execute(select_query, (user_id,))
+        number, baby_data = cursor.fetchone()
+
+        table_list = ['crp_huang_table', 'crp_lin_table', 'crp_wang_table', 'crp_li_table']
+        record_number =0
+
+        print("baby_data:", baby_data)
+
+        for list in table_list:
+            select_sql = f"SELECT 幼兒身分證字號, 出生日期 FROM {list} where 聯絡電話 = %s"
+            cursor.execute(select_sql, (number,))
+            records = cursor.fetchall()
+
+            if records:
+                record_number += 1
+                if record_number == int(baby_data):
+                    nation_id = records[0][0]
+                    birthday = records[0][1].replace("-", "")
+                    break
+
+        return number, nation_id, birthday   # 如果沒有找到，返回 True
+
+    except Exception as e:
+        print(f"An error occurred while selecting data: {e}")
+        return False  # 發生錯誤時返回 False
 
 if __name__ == '__main__':
     app.run(debug=True)
