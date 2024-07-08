@@ -136,6 +136,10 @@ def add_weight():
             ''', (source, id_number, age_in_years, record_date.date(), None, weight))  # height 為 None，因為您未提供身高值
             print("成功插入體重數據")
             print(source, id_number, age_in_years, record_date.date(), None, weight)
+
+            conn.commit()
+            cursor.close()
+            conn.close()
             return jsonify({'status': 'success'}), 201
         return jsonify({'error': '資料不完整'}), 400
     except Exception as e:
@@ -225,8 +229,6 @@ def add_height():
                 INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (source, id_number, age_in_years, record_date.date(), height, None))  # weight 为 None，因为未提供体重值
-
-            print(source, id_number, age_in_years, record_date.date(), height, None)
         
             conn.commit()
             cursor.close()
