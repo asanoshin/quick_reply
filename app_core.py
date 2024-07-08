@@ -3,7 +3,7 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import psycopg2
-from datetime import date
+from datetime import date, datetime
 
 app = Flask(__name__)
 
@@ -53,11 +53,11 @@ def handle_message(event):
 
 
 
-# 模擬數據庫
-records = {
-    "weights": [],
-    "heights": []
-}
+# # 模擬數據庫
+# records = {
+#     "weights": [],
+#     "heights": []
+# }
 
 
 def calculate_mingo_age(birthday):
@@ -103,8 +103,13 @@ def add_weight():
     if 'date' in data and 'value' in data and 'userId' in data:
 
         user_id = data['userId']
-        number,  id_number, birthday = select_id1(user_id, cursor)
+        number, id_number, birthday = select_id1(user_id, cursor)
         record_date = data['date']
+        try:
+            record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
+        except ValueError:
+            return jsonify({'error': 'Invalid date format'}), 400
+        
         weight = data['value']
         source = 'line' 
         age_year, age_month = calculate_mingo_age(birthday)
@@ -138,6 +143,8 @@ def get_weights():
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
 
+    number, id_number, birthday, name = select_id1(user_id, cursor)
+
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
 
@@ -146,7 +153,7 @@ def get_weights():
         FROM child_bw_height_table
         WHERE id_number = %s AND weight IS NOT NULL
         ORDER BY record_date
-    ''', (user_id,))
+    ''', (id_number,))
 
     user_weights = cursor.fetchall()
 
@@ -189,8 +196,13 @@ def add_height():
     data = request.get_json()
     if 'date' in data and 'value' in data and 'userId' in data:
         user_id = data['userId']
-        number, id_number, birthday = select_id1(user_id, cursor)
+        number, id_number, birthday, name = select_id1(user_id, cursor)
         record_date = data['date']
+        try:
+            record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
+        except ValueError:
+            return jsonify({'error': 'Invalid date format'}), 400
+        
         height = data['value']
         source = 'line'
         age_year, age_month = calculate_mingo_age(birthday)
@@ -213,7 +225,8 @@ def get_heights():
     user_id = request.args.get('userId')
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
-
+    
+    number, id_number, birthday, name = select_id1(user_id, cursor)
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
 
@@ -222,7 +235,7 @@ def get_heights():
         FROM child_bw_height_table
         WHERE id_number = %s AND height IS NOT NULL
         ORDER BY record_date
-    ''', (user_id,))
+    ''', (id_number,))
 
     user_heights = cursor.fetchall()
 
@@ -312,9 +325,10 @@ def select_id1(user_id, cursor):
                 if record_number == int(baby_data):
                     nation_id = records[0][0]
                     birthday = records[0][1].replace("-", "")
+                    name = records[0][2]
                     break
 
-        return number, nation_id, birthday   # 如果沒有找到，返回 True
+        return number, nation_id, birthday, name  # 如果沒有找到，返回 True
 
     except Exception as e:
         print(f"An error occurred while selecting data: {e}")
