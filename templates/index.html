@@ -168,7 +168,10 @@
                         .then(data => {
                             document.getElementById('date').value = '';
                             document.getElementById('value').value = '';
-zz
+                            queryRecords(userId);
+                            console.log(`新增${recordType === 'weight' ? '體重' : '身高'}記錄成功:`, data);
+                        })
+                        .catch(error => {
                             console.error(`新增${recordType === 'weight' ? '體重' : '身高'}記錄失敗:`, error);
                         });
                     });
