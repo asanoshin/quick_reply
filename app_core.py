@@ -249,9 +249,11 @@ def get_heights():
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
     
-    number, id_number, birthday, name = select_id1(user_id, cursor)
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
+    
+    number, id_number, birthday, name = select_id1(user_id, cursor)
+
 
     cursor.execute('''
         SELECT serial_id, record_date, height
