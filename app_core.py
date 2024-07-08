@@ -119,7 +119,7 @@ def add_weight():
         if 'date' in data and 'value' in data and 'userId' in data:
 
             user_id = data['userId']
-            number, id_number, birthday = select_id1(user_id, cursor)
+            number, id_number, birthday, name = select_id1(user_id, cursor)
             record_date = data['date']
             try:
                 record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
