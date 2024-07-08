@@ -117,7 +117,7 @@
                 <input type="date" id="date" name="date" required>
             </div>
             <div class="form-row">
-                <label for="value">數值：</label>
+                <label id="valueColumn" for="value">數值：</label>
                 <input type="number" step="0.1" id="value" name="value" required>
             </div>
             <button type="submit">新增</button>
@@ -232,6 +232,7 @@ zz
                                 }
 
                                 const name = data.name;
+                                document.getElementById('valueColumn').innerText = recordType === 'weight' ? '數值(kg)' : '數值(cm)';
                                 document.getElementById('recordListTitle').innerText = `${name}的${recordType === 'weight' ? '體重' : '身高'}記錄列表`;
                                 document.getElementById('valueHeader').innerText = recordType === 'weight' ? '體重(kg)' : '身高(cm)';
                             })

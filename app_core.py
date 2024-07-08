@@ -167,7 +167,10 @@ def get_weights():
 
     user_weights = cursor.fetchall()
 
-    records = [{'id': record[0], 'date': record[1], 'weight': record[2]} for record in user_weights]
+    if user_weights is None:
+        records =[{'id': "", 'date': "", 'weight': "無資料"}]
+    else:
+        records = [{'id': record[0], 'date': record[1], 'weight': record[2]} for record in user_weights]
 
     cursor.close()
     conn.close()
@@ -223,6 +226,8 @@ def add_height():
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (source, id_number, age_in_years, record_date.date(), height, None))  # weight 为 None，因为未提供体重值
 
+            print(source, id_number, age_in_years, record_date.date(), height, None)
+        
             conn.commit()
             cursor.close()
             conn.close()
@@ -256,8 +261,10 @@ def get_heights():
     ''', (id_number,))
 
     user_heights = cursor.fetchall()
-
-    records = [{'id': record[0], 'date': record[1], 'height': record[2]} for record in user_heights]
+    if user_heights is None:
+        records =[{'id': "", 'date': "", 'height': "無資料"}]
+    else:
+        records = [{'id': record[0], 'date': record[1], 'height': record[2]} for record in user_heights]
 
     cursor.close()
     conn.close()
