@@ -101,8 +101,9 @@ def add_weight():
 
     data = request.get_json()
     if 'date' in data and 'value' in data and 'userId' in data:
-        number,  id_number, birthday = select_id1(user_id, cursor)
+
         user_id = data['userId']
+        number,  id_number, birthday = select_id1(user_id, cursor)
         record_date = data['date']
         weight = data['value']
         source = 'line' 
@@ -302,7 +303,7 @@ def select_id1(user_id, cursor):
         print("baby_data:", baby_data)
 
         for list in table_list:
-            select_sql = f"SELECT 幼兒身分證字號, 出生日期 FROM {list} where 聯絡電話 = %s"
+            select_sql = f"SELECT 幼兒身分證字號, 出生日期,幼兒姓名 FROM {list} where 聯絡電話 = %s"
             cursor.execute(select_sql, (number,))
             records = cursor.fetchall()
 
