@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>記錄管理</title>
+    <title>【晨心】身高體重記錄管理</title>
     <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
     <style>
         body {
@@ -103,7 +103,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="greeting">新增記錄</h1>
+        <h1 id="greeting">資料加載中…</h1>
         <form id="addRecordForm">
             <div class="form-row">
                 <label for="recordType">類型：</label>
@@ -141,7 +141,7 @@
     <script>
         async function main() {
             try {
-                await liff.init({ liffId: "2005780715-O50Azkx1" });
+                await liff.init({ liffId: "2001962297-7qQE5Rr5" });
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 } else {
