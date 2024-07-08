@@ -263,7 +263,10 @@ def get_heights():
     ''', (id_number,))
 
     user_heights = cursor.fetchall()
-    if user_heights is None:
+
+    print("user_heights", user_heights)
+    if not user_heights:
+        print("yes, it is none")
         records =[{'id': "", 'date': "", 'height': "無資料"}]
     else:
         records = [{'id': record[0], 'date': record[1], 'height': record[2]} for record in user_heights]
