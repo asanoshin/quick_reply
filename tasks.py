@@ -8,4 +8,5 @@ app = Celery('tasks', broker=redis_url, backend=redis_url)
 def long_running_task(x, y):
     import time
     time.sleep(5)
+    print(f"Task completed with result {x + y}")
     return x + y
