@@ -1,12 +1,29 @@
-import os
 from celery import Celery
+import time
 
-redis_url = os.environ.get('REDIS_URL', 'rediss://:p2747f965299f0534af9dd1f1c3fbb57cc9ef45a3bdaac6dcf70da1ca1dc45daa@ec2-54-91-164-149.compute-1.amazonaws.com:20070?ssl_cert_reqs=CERT_NONE')
+# 假設您的 Redis URL
+redis_url = "rediss://:pac2484ffa244b6dbed12e3e37b44090ce54d8e6685ac09a89825acd0980d4081@ec2-3-218-138-147.compute-1.amazonaws.com:17669"
+
+# 創建 Celery 應用
 app = Celery('tasks', broker=redis_url, backend=redis_url)
+
+# 配置 Celery
+app.conf.update(
+    broker_use_ssl={
+        'ssl_cert_reqs': None  # 禁用證書驗證
+    },
+    redis_backend_use_ssl={
+        'ssl_cert_reqs': None  # 禁用證書驗證
+    }
+)
 
 @app.task
 def long_running_task(x, y):
-    import time
     time.sleep(5)
-    print(f"Task completed with result {x + y}")
-    return x + y
+    result = x + y
+    print(f"Task completed with result {result}")
+    return result
+
+if __name__ == '__main__':
+    print("Starting Celery worker...")
+    app.start()
