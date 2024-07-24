@@ -3,7 +3,7 @@ import time
 import ssl
 
 # 假設您的 Redis URL
-redis_url = "rediss://:pac2484ffa244b6dbed12e3e37b44090ce54d8e6685ac09a89825acd0980d4081@ec2-3-218-138-147.compute-1.amazonaws.com:17669"
+redis_url = "rediss://:pa602ae39e13e8a7209c611d22c0a03c57884120fd7caef65ef14f53485bd842d@ec2-3-232-151-78.compute-1.amazonaws.com:30539"
 
 # 創建 Celery 應用
 app = Celery('tasks', broker=redis_url, backend=redis_url)
