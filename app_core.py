@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
-from tasks import print_squares
-from celery.result import AsyncResult
+from flask import Flask, request, jsonify, render_template
+from datetime import date, datetime
+import psycopg2
+
 
 app = Flask(__name__)
 
