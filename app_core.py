@@ -329,7 +329,7 @@ def add_weight():
 
             age_in_years = age_year + age_month / 12
             cursor.execute('''
-                INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, weight,weight_percentile,)
+                INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, weight,weight_percentile)
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (source, id_number, age_in_years, record_date.date(), weight, weight_percentile))
             print("成功插入體重數據")
