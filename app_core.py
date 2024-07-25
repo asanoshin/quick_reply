@@ -57,38 +57,11 @@ def index2():
 
 def calculate_mingo_age(birthday,record_date):
     try:
-
-        # # 民国年份转换为公历年份
-        # birthday_year = int(birthday[:3]) + 1911
-        # birthday_month = int(birthday[3:5])
-        # birthday_day = int(birthday[5:7])
-        # print(birthday_year, birthday_month, birthday_day)
-        # # 计算出生日期
-        # birth_date = date(birthday_year, birthday_month, birthday_day)
-        
-        # # 计算年龄
-        # today = date.today()
-        # age_year = today.year - birth_date.year
-        # age_month = today.month - birth_date.month
-    
-        # # 如果月份差为负，说明还未到生日，年龄减1，月份加12
-        # if age_month < 0:
-        #     age_year -= 1
-        #     age_month += 12
-        
-        # # 如果今天日期在生日之前，月份减1
-        # if today.day < birthday_day:
-        #     age_month -= 1
-        #     if age_month < 0:
-        #         age_year -= 1
-        #         age_month += 12
-        
-        # return age_year, age_month
                 # 民国年份转换为公历年份
         birthday_year = int(birthday[:3]) + 1911
         birthday_month = int(birthday[3:5])
         birthday_day = int(birthday[5:7])
-        print(birthday_year, birthday_month, birthday_day)
+        # print(birthday_year, birthday_month, birthday_day)
 
         # 计算出生日期
         birth_date = date(birthday_year, birthday_month, birthday_day)
@@ -115,7 +88,7 @@ def calculate_mingo_age(birthday,record_date):
             if age_month < 0:
                 age_year -= 1
                 age_month += 12
-        print(age_year, age_month, day_difference)
+        print("age_year",age_year,',age_month:',age_month,',day_difference:',day_difference)
         # 将日差转换为月份的小数部分
         age_month_decimal = age_month + (day_difference / days_in_month)
 
@@ -124,7 +97,6 @@ def calculate_mingo_age(birthday,record_date):
         print("An error occurred:", e)
         return None, None
 
-print(calculate_mingo_age("1130710",date(2024, 7, 11)))
 
 @app.route('/name', methods=['GET'])
 def get_name():
@@ -166,10 +138,8 @@ def get_growth_data_from_db(month_age, gender):
 
 def interpolate(age, age_data, percentiles_data):
     if age in age_data:
-        print("Exact age found in data")
         return {k: v[age_data.index(age)] for k, v in percentiles_data.items()}
 
-    print("no exact age found in data, try interpolating")
     lower_age = max([a for a in age_data if a < age])
     upper_age = min([a for a in age_data if a > age])
 
@@ -180,11 +150,8 @@ def interpolate(age, age_data, percentiles_data):
     for k in percentiles_data.keys():
         lower_value = percentiles_data[k][lower_index]
         upper_value = percentiles_data[k][upper_index]
-        print(f"Interpolating {k} between {lower_value} and {upper_value}")
-        print(lower_age ,"+", "(",upper_age,"-",lower_age,")","/", "(",age,"-",lower_age,")")
         interpolated_values[k] = lower_value + (upper_value - lower_value) * ((age - lower_age) / (upper_age - lower_age))
 
-    print(f"Interpolated values for age {age}: {interpolated_values}")
     return interpolated_values
 
 def get_percentile(value, percentiles, percentile_labels):
@@ -288,7 +255,6 @@ def calculate_weight_percentile_function(status,age, gender, weight):
                 return None, None
 
         weight_percentile = calculate_weight_percentiles(gender, age, weight)
-        print("get weight_percentile:", weight_percentile)
         return weight_percentile
     except Exception as e:
         print("An error occurred when calculate older percentile function:", e)
@@ -319,7 +285,7 @@ def add_weight():
             weight = data['value']
             source = 'line' 
             age_year, age_month = calculate_mingo_age(birthday, record_date)
-            print("age_year:", age_year, ";age_month:", age_month)
+
             gender_code = id_number[1]  # 獲取 id_number 的第二個字符
             gender = 'boy' if gender_code == '1' else 'girl'
                     
@@ -327,7 +293,6 @@ def add_weight():
 
             if month_age <= 60:
                 status = 'young'
-                print("status:", status,";month_age:", month_age,";weight:", weight)
                 weight_percentile= calculate_weight_percentile_function(
                     status,month_age, gender, weight=float(weight) if weight is not None else None)
                 print("weight_percentile:", weight_percentile)
@@ -345,7 +310,7 @@ def add_weight():
             ''', (source, id_number, age_in_years, record_date.date(), weight, weight_percentile))
 
             conn.commit()
-            print('source:', source,';id_number:', id_number,';age_in_years:', age_in_years,';record_date:', record_date.date(),'weight:', weight,'weight_percentile:', weight_percentile)
+            # print('source:', source,';id_number:', id_number,';age_in_years:', age_in_years,';record_date:', record_date.date(),'weight:', weight,'weight_percentile:', weight_percentile)
             return jsonify({'status': 'success'}), 201
         return jsonify({'error': '資料不完整'}), 400
     except Exception as e:
@@ -384,9 +349,6 @@ def get_weights():
 
     cursor.close()
     conn.close()
-
-    # print("user_id", user_id)
-    # print("user_weights", records)
 
     return jsonify(records), 200
 
@@ -501,7 +463,7 @@ def calculate_height_percentile_function(status,age, gender, height):
                 return None, None
 
         height_percentile = calculate_height_percentiles(gender, age, height)
-        print("get height_percentile:", height_percentile)
+
         return height_percentile
     except Exception as e:
         print("An error occurred when calculate older percentile function:", e)
@@ -553,7 +515,7 @@ def add_height():
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (source, id_number, age_in_years, record_date.date(), height, height_percentile))
 
-            print(source, id_number, age_in_years, record_date.date(), height, height_percentile)
+            # print(source, id_number, age_in_years, record_date.date(), height, height_percentile)
         
             conn.commit()
             cursor.close()
@@ -600,9 +562,6 @@ def get_heights():
     cursor.close()
     conn.close()
 
-    # print("user_id", user_id)
-    # print("user_heights", records)
-
     return jsonify(records), 200
 
 @app.route('/heights/<int:record_id>', methods=['DELETE'])
@@ -639,8 +598,6 @@ def select_id1(user_id, cursor):
 
         table_list = ['crp_huang_table', 'crp_lin_table', 'crp_wang_table', 'crp_li_table']
         record_number =0
-
-        # print("baby_data:", baby_data)
 
         for list in table_list:
             select_sql = f"SELECT 幼兒身分證字號, 出生日期,幼兒姓名 FROM {list} where 聯絡電話 = %s"
