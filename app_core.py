@@ -290,8 +290,8 @@ def calculate_weight_percentile_function(status,age, gender, weight):
         return None, None   
 
 weight_percent = calculate_weight_percentile_function('young',0.041666666666666664,'girl',3.275)
-print("weight_percent:", weight_percent)
-input("Press Enter to continue...")
+# print("weight_percent:", weight_percent)
+# input("Press Enter to continue...")
 
 @app.route('/weights', methods=['POST'])
 def add_weight():
