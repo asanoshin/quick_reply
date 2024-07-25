@@ -165,7 +165,6 @@ def get_growth_data_from_db(month_age, gender):
     return result
 
 def interpolate(age, age_data, percentiles_data):
-    print("try interpolate")
     if age in age_data:
         return {k: v[age_data.index(age)] for k, v in percentiles_data.items()}
 
@@ -181,10 +180,12 @@ def interpolate(age, age_data, percentiles_data):
         upper_value = percentiles_data[k][upper_index]
         interpolated_values[k] = lower_value + (upper_value - lower_value) * ((age - lower_age) / (upper_age - lower_age))
 
+    print(f"Interpolated values for age {age}: {interpolated_values}")
     return interpolated_values
 
 def get_percentile(value, percentiles, percentile_labels):
     for i in range(len(percentiles) - 1):
+        print(f"Checking if {percentiles[i]} <= {value} < {percentiles[i + 1]}")
         if percentiles[i] <= value < percentiles[i + 1]:
             return percentile_labels[i]
     if value < percentiles[0]:
@@ -288,10 +289,14 @@ def calculate_weight_percentile_function(status,age, gender, weight):
         print("An error occurred when calculate older percentile function:", e)
         return None, None   
 
+weight_percent = calculate_weight_percentile_function('young',0.041666666666666664,'girl',3.275)
+print("weight_percent:", weight_percent)
+input("Press Enter to continue...")
+
 @app.route('/weights', methods=['POST'])
 def add_weight():
     try:
-        print("進入 add_weight")
+        # print("進入 add_weight")
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
@@ -334,8 +339,7 @@ def add_weight():
             ''', (source, id_number, age_in_years, record_date.date(), weight, weight_percentile))
 
             conn.commit()
-            print("成功插入體重數據")
-            print(source, id_number, age_in_years, record_date.date(), weight, weight_percentile)
+            print('source:', source,';id_number:', id_number,';age_in_years:', age_in_years,';record_date:', record_date.date(),'weight:', weight,'weight_percentile:', weight_percentile)
             return jsonify({'status': 'success'}), 201
         return jsonify({'error': '資料不完整'}), 400
     except Exception as e:
@@ -630,7 +634,7 @@ def select_id1(user_id, cursor):
         table_list = ['crp_huang_table', 'crp_lin_table', 'crp_wang_table', 'crp_li_table']
         record_number =0
 
-        print("baby_data:", baby_data)
+        # print("baby_data:", baby_data)
 
         for list in table_list:
             select_sql = f"SELECT 幼兒身分證字號, 出生日期,幼兒姓名 FROM {list} where 聯絡電話 = %s"
