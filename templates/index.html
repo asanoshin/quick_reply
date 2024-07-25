@@ -201,7 +201,7 @@
                                 row.innerHTML = `
                                     <td>${formattedDate}</td>
                                     <td>${recordType === 'weight' ? record.weight : record.height}</td>
-                                    <td>${record.percentage}</td>
+                                    <td>${record.percentile}</td>
                                     <td><button onclick="deleteRecord('${recordType}', ${record.id})">刪除</button></td>
                                 `;
                                 recordList.appendChild(row);
