@@ -166,8 +166,10 @@ def get_growth_data_from_db(month_age, gender):
 
 def interpolate(age, age_data, percentiles_data):
     if age in age_data:
+        print("Exact age found in data")
         return {k: v[age_data.index(age)] for k, v in percentiles_data.items()}
 
+    print("no exact age found in data, try interpolating")
     lower_age = max([a for a in age_data if a < age])
     upper_age = min([a for a in age_data if a > age])
 
@@ -178,6 +180,8 @@ def interpolate(age, age_data, percentiles_data):
     for k in percentiles_data.keys():
         lower_value = percentiles_data[k][lower_index]
         upper_value = percentiles_data[k][upper_index]
+        print(f"Interpolating {k} between {lower_value} and {upper_value}")
+        print(lower_age ,"+", "(",upper_age,"-",lower_age,")","/", "(",age,"-",lower_age,")")
         interpolated_values[k] = lower_value + (upper_value - lower_value) * ((age - lower_age) / (upper_age - lower_age))
 
     print(f"Interpolated values for age {age}: {interpolated_values}")
@@ -261,6 +265,7 @@ def calculate_weight_percentile_function(status,age, gender, weight):
                         return None, None
 
                     if status == 'young':
+                        print("try to interpolate;", "age:", age, "weight_data['age_months']:", weight_data['age_months'], "weight_data:", weight_data)
                         age_data_weight = interpolate(age, weight_data['age_months'], weight_data)
                     else:
                         age_data_weight = interpolate(age, weight_data['age_years'], weight_data)
@@ -289,7 +294,7 @@ def calculate_weight_percentile_function(status,age, gender, weight):
         print("An error occurred when calculate older percentile function:", e)
         return None, None   
 
-weight_percent = calculate_weight_percentile_function('young',0.041666666666666664,'girl',3.275)
+# weight_percent = calculate_weight_percentile_function('young',0.041666666666666664,'girl',3.275)
 # print("weight_percent:", weight_percent)
 # input("Press Enter to continue...")
 
@@ -322,6 +327,7 @@ def add_weight():
 
             if month_age <= 60:
                 status = 'young'
+                print("status:", status,";month_age:", month_age,";weight:", weight)
                 weight_percentile= calculate_weight_percentile_function(
                     status,month_age, gender, weight=float(weight) if weight is not None else None)
                 print("weight_percentile:", weight_percentile)
