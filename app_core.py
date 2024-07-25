@@ -1,13 +1,10 @@
 from flask import Flask, request, jsonify, render_template
-from datetime import date, datetime
+from celery.result import AsyncResult
 import psycopg2
-
+from datetime import date, datetime
+import os
 
 app = Flask(__name__)
-
-# # LINE channel access token and secret
-# line_bot_api = LineBotApi('bvoaealgSeBUNivXvkNi27W7SFUTwAWmXIshvTZbbiw3aBdqtCN77irNRrXHsrWAlCRlDSYy0vBVLYjJ5pCA/GOuiE+4T8kSCtuaUM5x6eCa2drL2ltM4E707KNQax+HmtCH5bhI/K5LHp8g1xkJQwdB04t89/1O/w1cDnyilFU=')
-# handler = WebhookHandler('1bbe70b270080e112f6f495709b43c30')
 
 DATABASE_URL = 'postgresql://qlinywlvdeayao:74910498f72a2177615b9f280a08235f6543151c8b484a577f87783109c38275@ec2-44-218-23-136.compute-1.amazonaws.com:5432/dd8pvnm4i6jcfe'
 
@@ -134,10 +131,6 @@ def add_weight():
             ''', (source, id_number, age_in_years, record_date.date(), None, weight))  # height 為 None，因為您未提供身高值
             print("成功插入體重數據")
             print(source, id_number, age_in_years, record_date.date(), None, weight)
-
-            conn.commit()
-            cursor.close()
-            conn.close()
             return jsonify({'status': 'success'}), 201
         return jsonify({'error': '資料不完整'}), 400
     except Exception as e:
@@ -227,6 +220,8 @@ def add_height():
                 INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, height, weight)
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (source, id_number, age_in_years, record_date.date(), height, None))  # weight 为 None，因为未提供体重值
+
+            print(source, id_number, age_in_years, record_date.date(), height, None)
         
             conn.commit()
             cursor.close()
@@ -321,19 +316,12 @@ def select_id1(user_id, cursor):
             records = cursor.fetchall()
 
             if records:
-                record_number += len(records)  # Counting all fetched records
-                
-                # If the number of accumulated records is less than or equal to the target baby_data
-                if record_number >= int(baby_data):
-                    # Fetch the last record's data as specified
-                    target_index = min(int(baby_data) - 1, len(records) - 1)  # Ensuring we do not go out of index
-                    nation_id = records[target_index][0]
-                    birthday = records[target_index][1].replace("-", "")
-                    name = records[target_index][2]
+                record_number += 1
+                if record_number == int(baby_data):
+                    nation_id = records[0][0]
+                    birthday = records[0][1].replace("-", "")
+                    name = records[0][2]
                     break
-                else:
-                    baby_data= int(baby_data) - len(records)  
-                    print(f"{list} has {len(records)} records, and baby_data is now {baby_data}")
 
         return number, nation_id, birthday, name  # 如果沒有找到，返回 True
 
