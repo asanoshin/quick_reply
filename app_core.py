@@ -55,7 +55,7 @@ def index2():
 # }
 
 
-def calculate_mingo_age(birthday):
+def calculate_mingo_age(birthday,record_date):
     try:
 
         # # 民国年份转换为公历年份
@@ -92,13 +92,11 @@ def calculate_mingo_age(birthday):
 
         # 计算出生日期
         birth_date = date(birthday_year, birthday_month, birthday_day)
-        
-        # 计算今天的日期
-        today = date.today()
+    
 
         # 计算年份和月份差异
-        age_year = today.year - birth_date.year
-        age_month = today.month - birth_date.month
+        age_year = record_date.year - birth_date.year
+        age_month = record_date.month - birth_date.month
 
         # 如果月份差为负，说明还未到生日，年龄减1，月份加12
         if age_month < 0:
@@ -106,7 +104,7 @@ def calculate_mingo_age(birthday):
             age_month += 12
 
         # 计算日期差异，并转换为月份的小数部分
-        day_difference = today.day - birthday_day
+        day_difference = record_date.day - birthday_day
         days_in_month = 30  # 以平均每月30天计算
 
         # 如果今天的日在出生日之前，日差为负，需要从月份中减去
@@ -117,7 +115,7 @@ def calculate_mingo_age(birthday):
             if age_month < 0:
                 age_year -= 1
                 age_month += 12
-
+        print(age_year, age_month, day_difference)
         # 将日差转换为月份的小数部分
         age_month_decimal = age_month + (day_difference / days_in_month)
 
@@ -125,6 +123,8 @@ def calculate_mingo_age(birthday):
     except Exception as e:
         print("An error occurred:", e)
         return None, None
+
+print(calculate_mingo_age("1130710",date(2024, 7, 11)))
 
 @app.route('/name', methods=['GET'])
 def get_name():
@@ -318,8 +318,8 @@ def add_weight():
             
             weight = data['value']
             source = 'line' 
-            age_year, age_month = calculate_mingo_age(birthday)
-
+            age_year, age_month = calculate_mingo_age(birthday, record_date)
+            print("age_year:", age_year, ";age_month:", age_month)
             gender_code = id_number[1]  # 獲取 id_number 的第二個字符
             gender = 'boy' if gender_code == '1' else 'girl'
                     
