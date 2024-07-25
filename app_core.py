@@ -271,8 +271,8 @@ def calculate_weight_percentile_function(status,age, gender, weight):
                         age_data_weight['weight_pr97']
                     ]
                     percentile_labels = [
-                        '3rd-15th percentile', '15th-25th percentile', '25th-50th percentile',
-                        '50th-75th percentile', '75th-85th percentile', '85th-97th percentile'
+                        '3rd-15th %', '15th-25th %', '25th-50th %',
+                        '50th-75th %', '75th-85th %', '85th-97th %'
                     ]
                     weight_percentile = get_percentile(weight, weight_percentiles, percentile_labels)
                 
@@ -480,8 +480,8 @@ def calculate_height_percentile_function(status,age, gender, height):
                         age_data_height['height_pr97']
                     ]
                     percentile_labels = [
-                        '3rd-15th percentile', '15th-25th percentile', '25th-50th percentile',
-                        '50th-75th percentile', '75th-85th percentile', '85th-97th percentile'
+                        '3rd-15th %', '15th-25th %', '25th-50th %',
+                        '50th-75th %', '75th-85th %', '85th-97th %'
                     ]
                     height_percentile = get_percentile(height, height_percentiles, percentile_labels)
                 
