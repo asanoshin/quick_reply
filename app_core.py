@@ -368,9 +368,9 @@ def get_weights():
     user_weights = cursor.fetchall()
 
     if not user_weights:
-        records =[{'id': user_id, 'date': "", 'weight': "無資料", 'weight_percentile': ""}]
+        records =[{'id': user_id, 'date': "", 'weight': "無資料", 'percentile': ""}]
     else:
-        records = [{'id': record[0], 'date': record[1], 'weight': record[2], 'weight_percentile': record[3] if record[3] is not None else ""} for record in user_weights]
+        records = [{'id': record[0], 'date': record[1], 'weight': record[2], 'percentile': record[3] if record[3] is not None else ""} for record in user_weights]
 
     cursor.close()
     conn.close()
@@ -583,9 +583,9 @@ def get_heights():
 
     if not user_heights:
         print("yes, it is none")
-        records =[{'id': user_id, 'date': "", 'height': "無資料", 'height_percentile': ""}]
+        records =[{'id': user_id, 'date': "", 'height': "無資料", 'percentile': ""}]
     else:
-        records = [{'id': record[0], 'date': record[1], 'height': record[2], 'height_percentile': record[3] if record[3] is not None else ""} for record in user_heights]
+        records = [{'id': record[0], 'date': record[1], 'height': record[2], 'percentile': record[3] if record[3] is not None else ""} for record in user_heights]
 
     cursor.close()
     conn.close()
