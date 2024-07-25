@@ -321,12 +321,19 @@ def select_id1(user_id, cursor):
             records = cursor.fetchall()
 
             if records:
-                record_number += 1
-                if record_number == int(baby_data):
-                    nation_id = records[0][0]
-                    birthday = records[0][1].replace("-", "")
-                    name = records[0][2]
+                record_number += len(records)  # Counting all fetched records
+                
+                # If the number of accumulated records is less than or equal to the target baby_data
+                if record_number >= int(baby_data):
+                    # Fetch the last record's data as specified
+                    target_index = min(int(baby_data) - 1, len(records) - 1)  # Ensuring we do not go out of index
+                    nation_id = records[target_index][0]
+                    birthday = records[target_index][1].replace("-", "")
+                    name = records[target_index][2]
                     break
+                else:
+                    baby_data= int(baby_data) - len(records)  
+                    print(f"{list} has {len(records)} records, and baby_data is now {baby_data}")
 
         return number, nation_id, birthday, name  # 如果沒有找到，返回 True
 
