@@ -332,6 +332,8 @@ def add_weight():
                 INSERT INTO child_bw_height_table (source, id_number, age_in_years, record_date, weight,weight_percentile)
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (source, id_number, age_in_years, record_date.date(), weight, weight_percentile))
+
+            conn.commit()
             print("成功插入體重數據")
             print(source, id_number, age_in_years, record_date.date(), weight, weight_percentile)
             return jsonify({'status': 'success'}), 201
@@ -373,8 +375,8 @@ def get_weights():
     cursor.close()
     conn.close()
 
-    print("user_id", user_id)
-    print("user_weights", records)
+    # print("user_id", user_id)
+    # print("user_weights", records)
 
     return jsonify(records), 200
 
@@ -588,8 +590,8 @@ def get_heights():
     cursor.close()
     conn.close()
 
-    print("user_id", user_id)
-    print("user_heights", records)
+    # print("user_id", user_id)
+    # print("user_heights", records)
 
     return jsonify(records), 200
 
