@@ -129,6 +129,7 @@
                 <tr>
                     <th>日期</th>
                     <th id="valueHeader">體重(kg)</th>
+                    <th>百分比</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -200,6 +201,7 @@
                                 row.innerHTML = `
                                     <td>${formattedDate}</td>
                                     <td>${recordType === 'weight' ? record.weight : record.height}</td>
+                                    <td>${record.percentage}</td>
                                     <td><button onclick="deleteRecord('${recordType}', ${record.id})">刪除</button></td>
                                 `;
                                 recordList.appendChild(row);
