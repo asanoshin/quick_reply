@@ -128,6 +128,7 @@
             <thead>
                 <tr>
                     <th>日期</th>
+                    <th>年齡</th>
                     <th id="valueHeader">體重(kg)</th>
                     <th>百分比</th>
                     <th>操作</th>
@@ -200,6 +201,7 @@
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
                                     <td>${formattedDate}</td>
+                                    <td>${record.age}</td>
                                     <td>${recordType === 'weight' ? record.weight : record.height}</td>
                                     <td>${record.percentile}</td>
                                     <td><button onclick="deleteRecord('${recordType}', ${record.id})">刪除</button></td>

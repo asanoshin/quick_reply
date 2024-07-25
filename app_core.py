@@ -13,10 +13,6 @@ DATABASE_URL = 'postgresql://qlinywlvdeayao:74910498f72a2177615b9f280a08235f6543
 def index():
     return render_template('index.html')
 
-@app.route("/index2")
-def index2():
-    return render_template('index2.html')
-
 # Webhook route
 # @app.route("/callback", methods=['POST'])
 # def callback():
@@ -90,13 +86,25 @@ def calculate_mingo_age(birthday,record_date):
                 age_month += 12
         print("age_year",age_year,',age_month:',age_month,',day_difference:',day_difference)
         # 将日差转换为月份的小数部分
-        age_month_decimal = age_month + (day_difference / days_in_month)
+        # age_month_decimal = age_month + (day_difference / days_in_month)
 
-        return age_year, age_month_decimal
+        return age_year, age_month, day_difference
     except Exception as e:
         print("An error occurred:", e)
         return None, None
 
+def describe_age(birthday, record_date):
+    age_year, age_month, day_difference = calculate_mingo_age(birthday, record_date)
+    if age_year is None:
+        return "Invalid input data"
+    
+    if age_year == 0 and age_month < 6:
+        return "{}月{}天".format(age_month, day_difference)
+    elif age_year < 5:
+        return "{}年{}月".format(age_year, age_month)
+    else:
+        return "{}年".format(age_year)
+    
 
 @app.route('/name', methods=['GET'])
 def get_name():
@@ -260,9 +268,6 @@ def calculate_weight_percentile_function(status,age, gender, weight):
         print("An error occurred when calculate older percentile function:", e)
         return None, None   
 
-# weight_percent = calculate_weight_percentile_function('young',0.041666666666666664,'girl',3.275)
-# print("weight_percent:", weight_percent)
-# input("Press Enter to continue...")
 
 @app.route('/weights', methods=['POST'])
 def add_weight():
@@ -284,7 +289,8 @@ def add_weight():
             
             weight = data['value']
             source = 'line' 
-            age_year, age_month = calculate_mingo_age(birthday, record_date)
+            age_year, age_month, age_day = calculate_mingo_age(birthday, record_date)
+            age_month = age_month + (age_day / 30)
 
             gender_code = id_number[1]  # 獲取 id_number 的第二個字符
             gender = 'boy' if gender_code == '1' else 'girl'
@@ -320,8 +326,6 @@ def add_weight():
         cursor.close()
         conn.close()
 
-
-
 @app.route('/weights', methods=['GET'])
 def get_weights():
     user_id = request.args.get('userId')
@@ -339,19 +343,28 @@ def get_weights():
         WHERE id_number = %s AND weight IS NOT NULL
         ORDER BY record_date
     ''', (id_number,))
-
     user_weights = cursor.fetchall()
 
     if not user_weights:
-        records =[{'id': user_id, 'date': "", 'weight': "無資料", 'percentile': ""}]
+        records =[{'id': user_id, 'date': "",'age':"", 'weight': "無資料", 'percentile': ""}]
     else:
-        records = [{'id': record[0], 'date': record[1], 'weight': record[2], 'percentile': record[3] if record[3] is not None else ""} for record in user_weights]
-
+        records = []
+        for record in user_weights:
+            record_date = record[1]
+            age_description = describe_age(birthday, record_date)  # Assuming describe_age function is correctly defined elsewhere
+            records.append({
+                'id': record[0],
+                'date': record_date,
+                'age': age_description,
+                'weight': record[2],
+                'percentile': record[3] if record[3] is not None else ""
+            })
     cursor.close()
     conn.close()
 
     return jsonify(records), 200
 
+    
 @app.route('/weights/<int:record_id>', methods=['DELETE'])
 def delete_weight(record_id):
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -488,7 +501,8 @@ def add_height():
             
             height = data['value']
             source = 'line'
-            age_year, age_month = calculate_mingo_age(birthday)
+            age_year, age_month, age_day = calculate_mingo_age(birthday, record_date)
+            age_month = age_month + (age_day / 30)
 
             gender_code = id_number[1]  # 獲取 id_number 的第二個字符
             gender = 'boy' if gender_code == '1' else 'girl'
@@ -557,8 +571,17 @@ def get_heights():
         print("yes, it is none")
         records =[{'id': user_id, 'date': "", 'height': "無資料", 'percentile': ""}]
     else:
-        records = [{'id': record[0], 'date': record[1], 'height': record[2], 'percentile': record[3] if record[3] is not None else ""} for record in user_heights]
-
+        records = []
+        for record in user_heights:
+            record_date = record[1]
+            age_description = describe_age(birthday, record_date)  # Assuming describe_age function is correctly defined elsewhere
+            records.append({
+                'id': record[0],
+                'date': record_date,
+                'age': age_description,
+                'height': record[2],
+                'percentile': record[3] if record[3] is not None else ""
+            })
     cursor.close()
     conn.close()
 
