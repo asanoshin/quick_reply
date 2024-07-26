@@ -634,7 +634,7 @@ def select_id1(user_id, cursor):
                     # Fetch the last record's data as specified
                     target_index = min(int(baby_data) - 1, len(records) - 1)  # Ensuring we do not go out of index
                     nation_id = records[target_index][0]
-                    birthday = records[target_index][1].replace("-", "")
+                    birthday = records[target_index][1].replace("/", "")
                     name = records[target_index][2]
                     break
                 else:
