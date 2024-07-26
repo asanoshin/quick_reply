@@ -100,7 +100,7 @@ def describe_age(birthday, record_date):
     
     if age_year == 0 and age_month < 6:
         return "{}月{}天".format(age_month, day_difference)
-    elif age_year < 5:
+    elif age_year < 18:
         return "{}年{}月".format(age_year, age_month)
     else:
         return "{}年".format(age_year)
