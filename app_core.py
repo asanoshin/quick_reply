@@ -362,44 +362,48 @@ def get_weights():
     print("user_id:", user_id)
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
-    
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cursor = conn.cursor()
+    print("try to connect")
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cursor = conn.cursor()
 
-    result = select_id1(user_id, cursor)
-    if not result or result[0] is None:
+        result = select_id1(user_id, cursor)
+        if not result or result[0] is None:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'User not found'}), 404
+            
+        number, id_number, birthday, name = result
+
+        cursor.execute('''
+            SELECT serial_id, record_date, weight, weight_percentile
+            FROM child_bw_height_table
+            WHERE id_number = %s AND weight IS NOT NULL
+            ORDER BY record_date
+        ''', (id_number,))
+        user_weights = cursor.fetchall()
+
+        if not user_weights:
+            records =[{'id': user_id, 'date': "",'age':"", 'weight': "無資料", 'percentile': ""}]
+        else:
+            records = []
+            for record in user_weights:
+                record_date = record[1]
+                age_description = describe_age(birthday, record_date)  # Assuming describe_age function is correctly defined elsewhere
+                records.append({
+                    'id': record[0],
+                    'date': record_date,
+                    'age': age_description,
+                    'weight': record[2],
+                    'percentile': record[3] if record[3] is not None else ""
+                })
         cursor.close()
         conn.close()
-        return jsonify({'error': 'User not found'}), 404
-        
-    number, id_number, birthday, name = result
 
-    cursor.execute('''
-        SELECT serial_id, record_date, weight, weight_percentile
-        FROM child_bw_height_table
-        WHERE id_number = %s AND weight IS NOT NULL
-        ORDER BY record_date
-    ''', (id_number,))
-    user_weights = cursor.fetchall()
-
-    if not user_weights:
-        records =[{'id': user_id, 'date': "",'age':"", 'weight': "無資料", 'percentile': ""}]
-    else:
-        records = []
-        for record in user_weights:
-            record_date = record[1]
-            age_description = describe_age(birthday, record_date)  # Assuming describe_age function is correctly defined elsewhere
-            records.append({
-                'id': record[0],
-                'date': record_date,
-                'age': age_description,
-                'weight': record[2],
-                'percentile': record[3] if record[3] is not None else ""
-            })
-    cursor.close()
-    conn.close()
-
-    return jsonify(records), 200
+        return jsonify(records), 200
+    except Exception as e:
+        print("Error in get_weight_data: ", e)
+        return jsonify({'error': 'Internal server error'}), 500
 
     
 @app.route('/weights/<int:record_id>', methods=['DELETE'])
