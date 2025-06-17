@@ -8,9 +8,23 @@ app = Flask(__name__)
 
 DATABASE_URL = 'postgresql://qlinywlvdeayao:74910498f72a2177615b9f280a08235f6543151c8b484a577f87783109c38275@ec2-44-218-23-136.compute-1.amazonaws.com:5432/dd8pvnm4i6jcfe'
 
+# 添加請求日誌中間件
+@app.before_request
+def log_request_info():
+    print(f"收到請求: {request.method} {request.url}")
+    print(f"請求標頭: {dict(request.headers)}")
+    if request.is_json:
+        print(f"請求內容: {request.get_json()}")
+
+@app.after_request
+def log_response_info(response):
+    print(f"回應狀態: {response.status}")
+    return response
+
 
 @app.route("/")
 def index():
+    print("進入 index 路由")
     return render_template('index.html')
 
 # Webhook route
@@ -108,6 +122,7 @@ def describe_age(birthday, record_date):
 
 @app.route('/name', methods=['GET'])
 def get_name():
+    print("進入 get_name 路由")
     user_id = request.args.get('userId')
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
@@ -271,6 +286,7 @@ def calculate_weight_percentile_function(status,age, gender, weight):
 
 @app.route('/weights', methods=['POST'])
 def add_weight():
+    print("進入 add_weight 路由")
     try:
         print("進入 add_weight")
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -329,6 +345,7 @@ def add_weight():
 
 @app.route('/weights', methods=['GET'])
 def get_weights():
+    print("進入 get_weights 路由")
     user_id = request.args.get('userId')
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
@@ -486,6 +503,7 @@ def calculate_height_percentile_function(status,age, gender, height):
 
 @app.route('/heights', methods=['POST'])
 def add_height():
+    print("進入 add_height 路由")
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
@@ -549,6 +567,7 @@ def add_height():
 
 @app.route('/heights', methods=['GET'])
 def get_heights():
+    print("進入 get_heights 路由")
     user_id = request.args.get('userId')
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
@@ -654,4 +673,8 @@ def select_id1(user_id, cursor):
 
 
 if __name__ == '__main__':
+    print("應用程式啟動中...")
+    print("已註冊的路由:")
+    for rule in app.url_map.iter_rules():
+        print(f"  {rule.rule} - {rule.methods}")
     app.run(debug=True)
