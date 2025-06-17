@@ -130,7 +130,13 @@ def get_name():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
 
-    number, id_number, birthday, name = select_id1(user_id, cursor)
+    result = select_id1(user_id, cursor)
+    if not result or result[0] is None:
+        cursor.close()
+        conn.close()
+        return jsonify({'error': 'User not found'}), 404
+        
+    number, id_number, birthday, name = result
 
     cursor.close()
     conn.close()
@@ -297,7 +303,13 @@ def add_weight():
 
             user_id = data['userId']
             print("user_id:", user_id)
-            number, id_number, birthday, name = select_id1(user_id, cursor)
+            result = select_id1(user_id, cursor)
+            if not result or result[0] is None:
+                cursor.close()
+                conn.close()
+                return jsonify({'error': 'User not found'}), 404
+                
+            number, id_number, birthday, name = result
             record_date = data['date']
             try:
                 record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
@@ -353,7 +365,13 @@ def get_weights():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
 
-    number, id_number, birthday, name = select_id1(user_id, cursor)
+    result = select_id1(user_id, cursor)
+    if not result or result[0] is None:
+        cursor.close()
+        conn.close()
+        return jsonify({'error': 'User not found'}), 404
+        
+    number, id_number, birthday, name = result
 
     cursor.execute('''
         SELECT serial_id, record_date, weight, weight_percentile
@@ -511,7 +529,13 @@ def add_height():
         data = request.get_json()
         if 'date' in data and 'value' in data and 'userId' in data:
             user_id = data['userId']
-            number, id_number, birthday, name = select_id1(user_id, cursor)
+            result = select_id1(user_id, cursor)
+            if not result or result[0] is None:
+                cursor.close()
+                conn.close()
+                return jsonify({'error': 'User not found'}), 404
+                
+            number, id_number, birthday, name = result
             record_date = data['date']
             try:
                 record_date = datetime.strptime(record_date, '%Y-%m-%d')  # 假设日期格式为 'YYYY-MM-DD'
@@ -575,7 +599,13 @@ def get_heights():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
     
-    number, id_number, birthday, name = select_id1(user_id, cursor)
+    result = select_id1(user_id, cursor)
+    if not result or result[0] is None:
+        cursor.close()
+        conn.close()
+        return jsonify({'error': 'User not found'}), 404
+        
+    number, id_number, birthday, name = result
 
 
     cursor.execute('''
@@ -634,40 +664,61 @@ def delete_height(record_id):
 def select_id1(user_id, cursor):
     """檢查資料庫中是否存在給定的用戶 ID"""
     try:
-
+        print(f"select_id1 開始查詢 user_id: {user_id}")
+        
+        # 設置查詢超時
+        cursor.execute("SET statement_timeout = '20s'")
+        
         # 查詢資料庫中是否有給定的用戶 ID , 且 delete_date 是 NULL
+        print("查詢 id_table11...")
         select_query = f"SELECT number, baby_data FROM id_table11 WHERE id = %s AND delete_date IS NULL"
         cursor.execute(select_query, (user_id,))
-        number, baby_data = cursor.fetchone()
+        result = cursor.fetchone()
+        
+        if not result:
+            print("在 id_table11 中找不到該 user_id")
+            return None, None, None, None
+            
+        number, baby_data = result
         print("number:", number)
         print("baby_data:", baby_data)
+        
         table_list = ['crp_huang_table', 'crp_lin_table', 'crp_wang_table', 'crp_li_table']
-        record_number =0
+        record_number = 0
 
-        for list in table_list:
-            select_sql = f"SELECT 幼兒身分證字號, 出生日期,幼兒姓名 FROM {list} where 聯絡電話 = %s"
-            cursor.execute(select_sql, (number,))
-            records = cursor.fetchall()
-            if records:
-                record_number += len(records)  # Counting all fetched records
+        for table_name in table_list:
+            print(f"正在查詢表格: {table_name}")
+            select_sql = f"SELECT 幼兒身分證字號, 出生日期,幼兒姓名 FROM {table_name} where 聯絡電話 = %s"
+            try:
+                cursor.execute(select_sql, (number,))
+                records = cursor.fetchall()
+                print(f"從 {table_name} 找到 {len(records)} 筆記錄")
                 
-                # If the number of accumulated records is less than or equal to the target baby_data
-                if record_number >= int(baby_data):
-                    # Fetch the last record's data as specified
-                    target_index = min(int(baby_data) - 1, len(records) - 1)  # Ensuring we do not go out of index
-                    nation_id = records[target_index][0]
-                    birthday = records[target_index][1].replace("/", "")
-                    name = records[target_index][2]
-                    break
-                else:
-                    baby_data= int(baby_data) - len(records)  
-                    print(f"{list} has {len(records)} records, and baby_data is now {baby_data}")
+                if records:
+                    record_number += len(records)  # Counting all fetched records
+                    
+                    # If the number of accumulated records is less than or equal to the target baby_data
+                    if record_number >= int(baby_data):
+                        # Fetch the last record's data as specified
+                        target_index = min(int(baby_data) - 1, len(records) - 1)  # Ensuring we do not go out of index
+                        nation_id = records[target_index][0]
+                        birthday = records[target_index][1].replace("/", "")
+                        name = records[target_index][2]
+                        print(f"找到目標記錄: {name}, {nation_id}, {birthday}")
+                        return number, nation_id, birthday, name
+                    else:
+                        baby_data = int(baby_data) - len(records)  
+                        print(f"{table_name} has {len(records)} records, and baby_data is now {baby_data}")
+            except Exception as table_error:
+                print(f"查詢表格 {table_name} 時發生錯誤: {table_error}")
+                continue
 
-        return number, nation_id, birthday, name  # 如果沒有找到，返回 True
+        print("所有表格查詢完畢，未找到足夠的記錄")
+        return None, None, None, None
 
     except Exception as e:
-        print(f"An error occurred while selecting data: {e}")
-        return False  # 發生錯誤時返回 False
+        print(f"select_id1 發生錯誤: {e}")
+        return None, None, None, None
 
 
 
