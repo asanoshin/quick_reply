@@ -272,7 +272,7 @@ def calculate_weight_percentile_function(status,age, gender, weight):
 @app.route('/weights', methods=['POST'])
 def add_weight():
     try:
-        # print("進入 add_weight")
+        print("進入 add_weight")
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
@@ -611,6 +611,7 @@ def delete_height(record_id):
     return '', 204
 
 
+
 def select_id1(user_id, cursor):
     """檢查資料庫中是否存在給定的用戶 ID"""
     try:
@@ -648,6 +649,9 @@ def select_id1(user_id, cursor):
     except Exception as e:
         print(f"An error occurred while selecting data: {e}")
         return False  # 發生錯誤時返回 False
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
