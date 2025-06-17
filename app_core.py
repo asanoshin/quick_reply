@@ -359,6 +359,7 @@ def add_weight():
 def get_weights():
     print("進入 get_weights 路由")
     user_id = request.args.get('userId')
+    print("user_id:", user_id)
     if user_id is None:
         return jsonify({'error': 'Missing userId'}), 400
     
