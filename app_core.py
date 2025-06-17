@@ -6,8 +6,9 @@ import os
 
 app = Flask(__name__)
 
-DATABASE_URL = 'postgresql://qlinywlvdeayao:74910498f72a2177615b9f280a08235f6543151c8b484a577f87783109c38275@ec2-44-218-23-136.compute-1.amazonaws.com:5432/dd8pvnm4i6jcfe'
-
+# DATABASE_URL = 'postgresql://qlinywlvdeayao:74910498f72a2177615b9f280a08235f6543151c8b484a577f87783109c38275@ec2-44-218-23-136.compute-1.amazonaws.com:5432/dd8pvnm4i6jcfe'
+DATABASE_URL = os.environ.get('DATABASE_URL')
+print("DATABASE_URL",DATABASE_URL)
 # 添加請求日誌中間件
 @app.before_request
 def log_request_info():
