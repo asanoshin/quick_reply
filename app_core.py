@@ -280,6 +280,7 @@ def add_weight():
         if 'date' in data and 'value' in data and 'userId' in data:
 
             user_id = data['userId']
+            print("user_id:", user_id)
             number, id_number, birthday, name = select_id1(user_id, cursor)
             record_date = data['date']
             try:
@@ -618,7 +619,8 @@ def select_id1(user_id, cursor):
         select_query = f"SELECT number, baby_data FROM id_table11 WHERE id = %s AND delete_date IS NULL"
         cursor.execute(select_query, (user_id,))
         number, baby_data = cursor.fetchone()
-
+        print("number:", number)
+        print("baby_data:", baby_data)
         table_list = ['crp_huang_table', 'crp_lin_table', 'crp_wang_table', 'crp_li_table']
         record_number =0
 
