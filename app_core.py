@@ -3,12 +3,21 @@ from celery.result import AsyncResult
 import psycopg2
 from datetime import date, datetime
 import os
+from dotenv import load_dotenv
+
+# 載入 .env 文件中的環境變數
+load_dotenv()
 
 app = Flask(__name__)
 
-# DATABASE_URL = 'postgresql://qlinywlvdeayao:74910498f72a2177615b9f280a08235f6543151c8b484a577f87783109c38275@ec2-44-218-23-136.compute-1.amazonaws.com:5432/dd8pvnm4i6jcfe'
+# 從環境變數獲取資料庫 URL，如果沒有則使用預設值
 DATABASE_URL = os.environ.get('DATABASE_URL')
-print("DATABASE_URL",DATABASE_URL)
+if DATABASE_URL is None:
+    print("警告：未找到 DATABASE_URL 環境變數！")
+    # 這裡可以設置一個預設的本地資料庫 URL
+    # DATABASE_URL = 'postgresql://username:password@localhost:5432/database_name'
+
+
 # 添加請求日誌中間件
 @app.before_request
 def log_request_info():
@@ -730,8 +739,5 @@ def select_id1(user_id, cursor):
 
 
 if __name__ == '__main__':
-    print("應用程式啟動中...")
-    print("已註冊的路由:")
-    for rule in app.url_map.iter_rules():
-        print(f"  {rule.rule} - {rule.methods}")
+
     app.run(debug=True)
