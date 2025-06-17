@@ -150,6 +150,7 @@
                     const profile = await liff.getProfile();
                     document.getElementById('greeting').innerText = `Hello, ${profile.displayName}`;
                     const userId = profile.userId;
+                    console.log(userId);
 
                     document.getElementById('recordType').addEventListener('change', function() {
                         updateFormAndTable();
